@@ -1,0 +1,13 @@
+.detail-2{float:left;width:2rem;height:.6rem;margin:.15rem .05rem 0;padding:0 .4rem 0 .1rem;border:.01rem solid #ccc;border-radius:.1rem;line-height: .6rem;position: relative;}
+.detail-2 .select{position: absolute;width:100%;left:0;border:.01rem solid #ccc;border-top:none;background:#fff;}
+.detail-2 .select span{display:block;padding:.1rem;}
+.arrow{
+  display: block;
+  position: absolute;top:50%;right:.1rem;
+    width: .15rem;
+    height: .15rem;
+    margin-top:-.12rem;
+    border-top: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+    transform:rotate(-135deg);
+}
