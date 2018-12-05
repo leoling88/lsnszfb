@@ -4,7 +4,7 @@
 
         <dl class="logo_box">
           <dt><img src="../../../static/images/laisui_logo.png" alt=""></dt>
-          <dd>南沙区来穗人员服务管理局</dd>
+          <dd>番禺区来穗人员服务管理局</dd>
         </dl>
         <!--登录-->
         <x-input v-model="loginData.uerAcount" title="账 号：" placeholder="请输入您的身份证号" :show-clear="true" placeholder-align="right" text-align="right" :required="true" :is-type="inputValid.idNo" ref="uerAcount"></x-input>
@@ -23,12 +23,10 @@
     components: { Group,XInput,XButton},
     data() {
       return {
-        openid: '11',
-        wxsqn: '11',
+        openid: '',
+        wxsqn: '',
         idNo: this.$route.query.idNo,
         isShowTips: false,
-        openid: '44444',
-        wxsqn: '11',
         submitBtn: {
           disabled: false,
           text: '登　录',
@@ -39,8 +37,8 @@
           downTime: 60
         },
         loginData: {
-          uerAcount:'440921199010121273',  // 登录账号
-          passWord: '12345678'   // 登录密码
+          uerAcount:'',  // 登录账号
+          passWord: ''   // 登录密码
         },
         isFirst: true, // 是否是第一次选择或输入
         inputValid: {

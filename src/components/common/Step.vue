@@ -2,7 +2,8 @@
   <div>
     <dl class="step_cont">
       <dt><img :src="`./static/images/step${step}.png`"></dt>
-      <dd><span>基础信息</span><span>详情信息</span><span>信息确认</span></dd>
+      <!--<dd><span>基础信息</span><span>详情信息</span><span>信息确认</span></dd>-->
+      <dd><span>{{stepText1}}</span><span>{{stepText2}}</span><span>{{stepText3}}</span></dd>
     </dl>
   </div>
 </template>
@@ -12,7 +13,19 @@
       step: {
         type: [Number,String],
         default: 1
-      }
+      },
+      stepText1: {
+        type: String,
+        default: ''
+      },
+      stepText2: {
+        type: String,
+        default: ''
+      },
+      stepText3: {
+        type: String,
+        default: ''
+      },
     },
     data() {
         return {}

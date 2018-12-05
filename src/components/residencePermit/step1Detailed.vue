@@ -2,16 +2,15 @@
   <div class="template_container">
     <scroller ref="my_scroller" lock-x>
       <div style="overflow: hidden;">
-        <step step="1"></step>
+        <step step="1" stepText1="基础信息" stepText2="详情信息" stepText3="信息确认"></step>
         <div class="form_cont">
-<!--           <div @click="goNext">下一步</div>
- -->          <cell title="人员照片" ><img class="user_pic" :src="formData.userPic"></cell>
+          <div @click="goNext" v-if="nextBut">下一步（支付宝）</div>{{isReback}}
+          <!--<cell title="人员照片" ><img class="user_pic" :src="formData.userPic"></cell>-->
 
           <x-input v-model="formData.name" title="姓名" placeholder="请输入姓名" :show-clear="false" placeholder-align="right" :readonly="true" text-align="right"></x-input>
-
           <cell title="身份证" >{{formData.idNo}}</cell>
-
-          <custom-selector v-model="formData.sex" describe="性别" :options="sexList" :isLink="false" :disabled="true"></custom-selector>
+          <cell title="性别">{{formData.sex}}</cell>
+<!--           <custom-selector v-model="formData.sex" describe="性别" :options="sexList" :isLink="false" :disabled="true"></custom-selector> -->
 
           <x-input v-model="formData.birthday" title="出生日期" placeholder-align="right" type="text" :max="11" text-align="right" :readonly="true" :show-clear="false"></x-input>
 
@@ -39,13 +38,14 @@
   import api from '../../api/api'
   import { mapState } from 'vuex'
   export default {
-    name: 'step1',
+    name: 'step1Detailed',
     components: {Scroller, XInput,Group, Cell, Icon, Datetime, customSelector, Confirm,Step,SelectorSearch},
     directives: {
       TransferDom
     },
     data() {
       return {
+        nextBut: true,     //显示下一步按钮
         serviceType: this.$route.query.serviceType ? this.$route.query.serviceType : 1,  // 业务类型，1,为登记，2，为居住证第一次办理， 3：为居住证续签
         isShowConfirm: false,
         isReback: false,  // 数据是否回填，主要为了解决数据回填时阻止五级联动触发事件
@@ -53,6 +53,9 @@
         readonly: true,
         comGuid:this.$route.params.comGuid,
         maxYear: new Date().getFullYear(),
+        idCard: this.$route.params.idCard,
+        homeType: this.$route.params.homeType,     //地区
+
         formData: { // 表单数据
           alipayAcount: this.$route.params.alipayAcount,  // 即openid
           zhimascore: '',
@@ -131,24 +134,39 @@
       },
       getAlipayInfo () {
         this.$store.commit('UPDATE_LOADING', true);
-        api.peopleDetails(this.comGuid).then(res => {
+        api.getPeopleDetailsMS({idCard:this.idCard,homeType:this.homeType}).then(res => {
+        // api.getUserDetails(this.comGuid).then(res => {
           this.$store.commit('UPDATE_LOADING', false);
           const attributes = res.data.attributes
           const data = res.data.obj
           if(res.data.success && attributes){
+
             this.formData.userPic = data.pic;
             this.formData.name = data.realname ? data.realname : '';
             this.formData.idNo = data.idcard ? data.idcard : '';
+
+            let _idcard = data.idcard
+            let _sex
+            if(_idcard.length > 15){
+              _sex = _idcard.charAt(_idcard.length - 2)
+              if(_sex % 2 ==0) this.formData.sex = '女'
+              else  this.formData.sex = '男'
+                console.log("1")
+            }else{
+              _sex =  _idcard.charAt(_idcard.length-1)
+               console.log("2")
+              if(_sex % 2 ==0) this.formData.sex = '女'
+              else  this.formData.sex ='男'
+            }
             this.formData.zhimascore = data.zhimascore;
             this.$emit('UPDATE_ID_NO', this.formData.idNo)
-            this.formData.sex = data.sex ? data.sex : '';
             this.formData.birthday = moment(data.birthday).format("YYYY-MM-DD");
             this.formData.nation = data.nation ? data.nation : ''; // 民族
             this.formData.phoneNo = data.linkphone ? data.linkphone : '';
             this.$store.commit('UPDATE_ID_NO',data.idcard);  // 保存用户的身份证号，在居住证办理时会用到
-            this.formData.address = '440115'
-            this.formData.addressName = '南沙区'
-            if (this.formData.address == attributes.address) {  // 如果用户数据是南沙区的才会回填
+            this.formData.address = '440113'
+            this.formData.addressName = '番禺区'
+            if (this.formData.address == attributes.address) {  // 如果用户数据是番禺区的才会回填
               this.formData.newAddress = attributes.newAddress
               this.formData.streetTownCode = attributes.streetTownCode
               this.formData.streetTownName = attributes.streetTownName
@@ -166,41 +184,6 @@
         }).catch((res) => {
           this.$store.commit('UPDATE_LOADING', false);
         })
-        // api.getUserDetails(this.comGuid).then(res => {
-        //   this.$store.commit('UPDATE_LOADING', false);
-        //   const attributes = res.data.attributes
-        //   const data = res.data.obj
-        //   if(res.data.success && attributes){
-        //     this.formData.userPic = data.pic;
-        //     this.formData.name = data.realname ? data.realname : '';
-        //     this.formData.idNo = data.idcard ? data.idcard : '';
-        //     this.formData.zhimascore = data.zhimascore;
-        //     this.$emit('UPDATE_ID_NO', this.formData.idNo)
-        //     this.formData.sex = data.sex ? data.sex : '';
-        //     this.formData.birthday = moment(data.birthday).format("YYYY-MM-DD");
-        //     this.formData.nation = data.nation ? data.nation : ''; // 民族
-        //     this.formData.phoneNo = data.linkphone ? data.linkphone : '';
-        //     this.$store.commit('UPDATE_ID_NO',data.idcard);  // 保存用户的身份证号，在居住证办理时会用到
-        //     this.formData.address = '440115'
-        //     this.formData.addressName = '南沙区'
-        //     if (this.formData.address == attributes.address) {  // 如果用户数据是南沙区的才会回填
-        //       this.formData.newAddress = attributes.newAddress
-        //       this.formData.streetTownCode = attributes.streetTownCode
-        //       this.formData.streetTownName = attributes.streetTownName
-        //       this.formData.streetAlleysCode = attributes.streetAlleysCode
-        //       this.formData.streetAlleysName = attributes.streetAlleysName
-        //       this.formData.newStreetAlleysName = attributes.newStreetAlleysName
-        //       this.formData.doorNumberCode = attributes.doorNumberCode
-        //       this.formData.doorNumberName = attributes.doorNumberName
-        //       this.formData.newDoorNumberName = attributes.newDoorNumberName
-        //       this.formData.roomNumberCode = attributes.roomNumberCode
-        //       this.formData.roomNumberName = attributes.roomNumberName
-        //       this.formData.newRoomNumberName = attributes.newRoomNumberName
-        //     }
-        //   }
-        // }).catch((res) => {
-        //   this.$store.commit('UPDATE_LOADING', false);
-        // })
       },
       getName (value) {  // 将省市区编码转中文
         return value2name(value, ChinaAddressV4Data).split(' ')
@@ -214,6 +197,7 @@
           color : '#2a333c', // 必须以＃开始ARGB颜色值
         });
         AlipayJSBridge.call('showOptionMenu');
+        this.nextBut = false;
       }
     },
     mounted () {

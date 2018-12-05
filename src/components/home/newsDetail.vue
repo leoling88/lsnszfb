@@ -20,6 +20,7 @@
     components: {},
     data() {
       return {
+        newName: decodeURI(this.$route.query.newName),
         zanShow:true,
         zan1Show:false,
         thumbs: 0,
@@ -42,6 +43,11 @@
         this.zan1Show=true;
       }
     },
+    created () {
+      if (window.AlipayJSBridge) {
+        AlipayJSBridge.call('setTitle', {title: this.newName == 'undefined' ? '番禺区来穗人员服务管理局': this.newName});
+      }
+    },
     mounted(){
       api.newsDetail(this.newsId).then(res => {  // 新闻详情
         if(res.data.success){
@@ -61,9 +67,9 @@
   }
 </script>
 <style lang="less" scoped>
-  .news_title{width:90%;margin:.2rem auto 0 auto;overflow:hidden;line-height: .65rem;font-size: .38rem;color:#333;/*text-overflow:ellipsis;white-space: nowrap;*/}
+  .news_title{width:80%;height:1rem;margin:0 auto;overflow:hidden;line-height: 1rem;text-align: center;font-size: .45rem;color:#333;text-overflow:ellipsis;white-space: nowrap;}
   .new_info{
-    width:100%;height:1rem;line-height: 1rem;text-indent: .2rem;font-size: .3rem;color:#888;overflow:hidden;display: flex;flex-wrap: wrap;
+    width:100%;height:1rem;line-height: 1rem;text-indent: .2rem;font-size: .35rem;color:#888;overflow:hidden;display: flex;flex-wrap: wrap;
     span{display: block;flex: 1}
     em{color:#1f67d0;}
     span{text-align: center;

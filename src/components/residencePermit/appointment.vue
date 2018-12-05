@@ -129,7 +129,9 @@
           } else {
             this.$store.commit('SHOWTOAST', data.msg);
           }
-        });
+        })
+
+
         /*api.saveResideInfo({
           formData: this.formData,
           homeType: 'lsns_'  // 南沙区域标记
@@ -164,10 +166,10 @@
       this.getPeopleInfo()
     },
     mounted () {
-//      document.addEventListener('optionMenu', this.goHome, false) // 绑定支付宝右上角点击事件
+      document.addEventListener('optionMenu', this.goHome, false) // 绑定支付宝右上角点击事件
     },
     destroyed () {
-//      document.removeEventListener('optionMenu', this.goHome, false)
+      document.removeEventListener('optionMenu', this.goHome, false)
     }
   }
 </script>

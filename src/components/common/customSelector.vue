@@ -1,7 +1,7 @@
 <template>
   <div class="selector_box">
 
-    <cell class="custom_cell" :title="describe" :value="itemName" :is-link="isLink" @click.native="showPopup" :disabled="disabled" value-align="right">
+    <cell class="custom_cell" :title="describe" :value="itemName" :is-link="isLink" @click.native="showPopup" :disabled="disabled">
       <icon v-if="!isFirst && itemName == ''" type="warn"></icon>
     </cell>
 
@@ -46,6 +46,10 @@
         type:Boolean,
         default: false
       },
+      readOnly: { // 此状态控制可展示列表，但不可选择
+        type:Boolean,
+        default: false
+      },
       showLoading: { // 是否在加载中
         type:Boolean,
         default: false
@@ -66,8 +70,8 @@
     },
     watch: {
       value: function(val, old) {
-        if (val != old) this.assignments();
         this.$emit('change',val, this.itemName);
+        if (val != old) this.assignments();
       },
       show: function (val, old) {
         if (val) {
@@ -83,19 +87,23 @@
     },
     methods: {
       checkItem(key, val, index){
-        const lis = this.$refs.searchListCont.children
-        if (this.itemName != val) {  // 如果值不一致，触发
-          this.itemName = val;
-          this.$emit('input',key, val);
-        }
-        this.show = !this.show;
-        for(let i=0; i < lis.length; i++) {
-          if (i == index) {
-            lis[i].className = 'active'
-          } else if (i != lis.length - 1) {
-            lis[i].className = ''
+        if (this.readOnly) {
+          this.$emit('on-click',key, val);
+        } else {
+          const lis = this.$refs.searchListCont.children
+          if (this.itemName != val) {  // 如果值不一致，触发
+            this.itemName = val;
+            this.$emit('input',key, val);
+          }
+          for(let i=0; i < lis.length; i++) {
+            if (i == index) {
+              lis[i].className = 'active'
+            } else if (i != lis.length - 1) {
+              lis[i].className = ''
+            }
           }
         }
+        this.show = !this.show;
       },
       assignments(){  // 回显
         const options = this.$props['options'];
@@ -104,7 +112,7 @@
         });
       },
       showPopup () { // 打开组件
-        if (!this.disabled) {
+        if (!this.disabled || this.readOnly) {
           this.show = !this.show
           this.scrollTop = document.documentElement.scrollTop || document.body.scrollTop
           document.documentElement.style.top = -this.scrollTop + 'px'

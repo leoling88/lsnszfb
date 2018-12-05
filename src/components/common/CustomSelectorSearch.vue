@@ -6,8 +6,7 @@
 
     <div :class="['popup_cont',show && !disabled ? 'active' : '', showLoadMore ? 'loadMore' : '']" @scroll="scrollFn" ref="searchList">
       <!--关键字搜索-->
-      <!--<div class="search_box" v-show="show && !disabled && hasSearch">-->
-      <div class="search_box">
+      <div class="search_box" v-show="show && !disabled && hasSearch">
         <x-input v-model="keyWord" title="搜索" :debounce="1500" :show-clear="true" @on-change="keyWordChange" placeholder="请输入要搜索的关键字" ref="searchInput">
           <icon type="search" slot="label" style="margin-right:.2rem;"></icon>
         </x-input>
@@ -141,8 +140,9 @@
   }
 </script>
 <style lang="less" scoped>
-  .search_box{width:100%;height:42px; overflow: hidden;}
+  .search_box{width:100%;height:42px; overflow: hidden; }
   .vux-x-input{width:100%;background:#fff;border-bottom:1px solid #eee;position: fixed;left: 0;top:0;z-index:99999;}
+
 
   .popup_cont{width:100%;height:100%;overflow:hidden;position: fixed;top:900px;left:0;z-index:9999;overflow-y: scroll;background: #fff;transition: all .5s ease;}
   .popup_cont::-webkit-scrollbar{display: none;}
@@ -166,3 +166,4 @@
   .loader_more{width:100%;height:0;line-height:.8rem;overflow:hidden;margin:0;position: fixed;left: 0;bottom:0;background: #fff;transition: all .5s ease;}
   .showHeight{height:1rem;}
 </style>
+

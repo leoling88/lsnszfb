@@ -3,7 +3,7 @@
       <div class="longin_cont">
         <dl class="logo_box">
           <dt><img src="../../../static/images/laisui_logo.png" alt=""></dt>
-          <dd>南沙区来穗人员服务管理局</dd>
+          <dd>番禺区来穗人员服务管理局</dd>
         </dl>
 
         <x-input v-model="formData.phone" title="手机号：" placeholder="请输入手机" :show-clear="true" placeholder-align="right" text-align="right" :required="true" :is-type="inputValid.phone" ref="phone"></x-input>

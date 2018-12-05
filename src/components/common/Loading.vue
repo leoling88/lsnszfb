@@ -19,9 +19,7 @@
       }
     },
     computed: {
-      ...mapState([
-        'styleColor'
-      ])
+//      ...mapState([])
     }
   };
 </script>

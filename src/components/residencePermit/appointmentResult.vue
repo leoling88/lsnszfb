@@ -64,6 +64,7 @@
     },
     methods: {
       appointmentDetail () {  // 查询预约详情
+      	console.log(this.$route.query.appointmentId);
         this.$store.commit('UPDATE_LOADING', true);
         api.appointmentDetail({
           idCard: this.$route.params.idNo,
@@ -73,7 +74,8 @@
           this.$store.commit('UPDATE_LOADING', false);
           const data = res.data.jsonRes[0]
           if(res.data.success){
-            this.formData.czlx = data.czlx
+//          this.formData.czlx = data.czlx
+						this.formData.czlx = 1
             this.formData.xm = data.xm;
             this.formData.streetTownCode = data.streetTownCode;
             this.formData.checktimels = (data.szrq + data.kssj + data.jssj) || '';

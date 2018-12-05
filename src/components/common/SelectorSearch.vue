@@ -217,7 +217,7 @@
   .popup_cont.active{top:0;}
   .popup_cont.active.loadMore{height:100%;/*top:-1rem;*/}
   .selector_search_box .custom_cell{position: relative;box-sizing: border-box;
-    &:before{content: "";display: block;height:1px;width:100%;top:0;left:15px;transform: scaleY(0.5);}
+    &:before{content: "";display: block;height:1px;top:0;left:15px;transform: scaleY(0.5);}
   }
   .list_cont{
     width:100%;min-height:100%;overflow: hidden;background: #fff;box-sizing: border-box;

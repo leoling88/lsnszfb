@@ -1,13 +1,12 @@
 <template>
-    <div class="template_container">
-        <div class="error">
-          <img src="../../../static/images/error2.jpg" alt="">
-          <p>对不起，因系统维护<br/>服务暂不可用，请稍候再试</p>
+  <div class="template_container">
+    <div class="error">
+      <img src="../../../static/images/error2.jpg" alt="">
+      <p>对不起，因系统维护<br/>服务暂不可用，请稍候再试</p>
 
-          <!--<router-link :to="`/home`" class="check_detail_btn" style="margin-top:.6rem;">返回首页</router-link>-->
-          <a href="/cnLaiSui/mobile/laisuiHomeIndex?homeType=lsns_" class="check_detail_btn" >返回首页</a>
-        </div>
+      <a href="javascript:void(0);" class="check_detail_btn" style="margin-top:.6rem;" @click="backHome">返回首页</a>
     </div>
+  </div>
 </template>
 <script>
   import {XButton} from 'vux'
@@ -16,10 +15,22 @@
     components: {XButton},
     data() {
       return {
+        orginType: this.$route.query.orginType
 
       }
     },
     methods: {
+
+      backHome(){
+        console.log(this.orginType)
+        if(this.orginType == "ms") {
+            window.location.href = "https://gas.ms.ruishanio.com:83/";
+        }else{
+            window.location.href = "/cnLaiSui/mobile/laisuiHomeIndex?homeType=lspy_";
+        }
+
+      }
+
     },
     mounted(){
     }

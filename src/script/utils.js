@@ -53,18 +53,6 @@ export default{
     //工具类
     Vue.prototype.$Utils={
       /*
-      * 设置缓存
-      * */
-      setLocalStorage (key, value) {
-        localStorage.setItem(key, JSON.stringify(value))
-      },
-      /*
-      * 获取缓存
-      * */
-      getLocalStorage (key) {
-        return JSON.parse(localStorage.getItem(key))
-      },
-      /*
        * 说明：通过身份证号码获取出生年月日
        * idCard：{string} 身份证号码
        * */

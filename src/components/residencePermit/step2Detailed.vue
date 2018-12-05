@@ -2,10 +2,9 @@
     <div class="template_container">
       <scroller ref="scroller" lock-x>
         <div style="overflow: hidden;" class="step2Detailed">
-          <step step="2"></step>
+          <step step="2" stepText1="基础信息" stepText2="详情信息" stepText3="信息确认"></step>
           <div class="form_cont">
-<!--             <div @click="goNext">下一步</div>
- -->            <cell title="户籍地区" :value="formData.hjaddress"></cell>
+            <div @click="goNext" v-if="nextBut">下一步（支付宝）</div>{{isReback}}
             <cell title="户籍地址" :value="formData.hjAddressDetail"></cell>
             <custom-selector v-model="formData.addressType" describe="户口类型" :options="adresasTypeList" :isLink="false" :disabled="true"></custom-selector>
             <custom-selector v-model="formData.polity" describe="政治面貌" :options="polityList" :isLink="false" :disabled="true"></custom-selector>
@@ -32,20 +31,20 @@
               <custom-selector v-model="formData.occupation" describe="职业" :options="occupationList" :isLink="false" :disabled="true"></custom-selector>
               <template v-if="isShowUnit">
                 <cell title="单位名称" :value="formData.workCompany"></cell>
-                <cell v-show="formData.unitAdress" title="单位地址" :value="formData.unitAdress"></cell>
+                <cell  v-show="formData.unitAdress" title="单位地址" :value="formData.unitAdress"></cell>
                 <cell v-show="formData.unitNumber" title="企业编号" :value="formData.unitNumber"></cell>
                 <cell v-show="formData.unitPhone" title="单位电话" :value="formData.unitPhone"></cell>
               </template>
             </div>
 
             <!--子女-->
-            <group title="子女信息" class="group_cont" v-show="formData.liveType == '04'">
+            <group title="子女信息" class="group_cont" v-show="formData.liveType == '04' && formData.children.length > 0">
               <template v-for="(item,index) in formData.children">
                 <div class="child_title">第{{index + 1}}个孩子</div>
                 <cell title="姓名" :value="formData.children[index].childName"></cell>
                 <custom-selector v-model="formData.children[index].sex" describe="性别" :options="sexList" :isLink="false" :disabled="true"></custom-selector>
                 <custom-selector v-model="formData.children[index].relation" describe="关系" :options="relationList" :isLink="false" :disabled="true"></custom-selector>
-                <datetime v-show="formData.children[index].birthdayDate" class="address_cont" v-model="formData.children[index].birthdayDate" title="出生日期" :readonly="true"></datetime>
+                <cell v-show="formData.children[index].birthdayDate" class="address_cont" v-model="formData.children[index].birthdayDate" title="出生日期" :readonly="true"></cell>
                 <cell v-show="formData.children[index].childIdNo" title="身份证号" :value="formData.children[index].childIdNo"></cell>
               </template>
             </group>
@@ -56,20 +55,21 @@
     </div>
 </template>
 <script>
-    import {Scroller, XInput, Group, Datetime, ChinaAddressV4Data, Confirm, TransferDomDirective as TransferDom, Value2nameFilter as value2name, Search, Icon, Cell } from 'vux'
+    import {Scroller, XInput, Group, Datetime, ChinaAddressV4Data, Confirm,TransferDomDirective as TransferDom, Value2nameFilter as value2name,Search, Icon, Cell } from 'vux'
     import customSelector from '../common/customSelector.vue'
     import SelectorSearch from '../common/SelectorSearch.vue'
     import Step from '../common/Step.vue'
     import api from '../../api/api'
     import { mapState } from 'vuex'
     export default {
-      name: 'step2',
-      components: {Scroller, Group, XInput, Datetime, customSelector, Confirm, Step, SelectorSearch, Search, Icon, Cell},
+      name: 'step2Detailed',
+      components: {Scroller, Group, XInput, Datetime, ChinaAddressV4Data, customSelector, Confirm, Step, SelectorSearch, Search, Icon, Cell},
       directives: {
         TransferDom
       },
       data() {
           return {
+            nextBut: true,     //显示下一步按钮
             serviceType: this.$route.query.serviceType ? this.$route.query.serviceType : 1,  // 业务类型，1,为登记，2，为居住证第一次办理， 3：为居住证续签
             Confirm: {
               isShowConfirm: false,
@@ -87,13 +87,12 @@
             openid: this.$route.query.openid,
             formData: { // 表单数据
               homeType: 'lsns_',  // 南沙区域标记
-              jhid: '',
               zhimascore: this.$route.query.zhimascore,
               idNo:this.$route.params.idNo,
               culture: '',// 文化程度
               polity: '',// 政治面貌
               addressType: '',// 户口所在地类型
-              hjaddress: '',// 户籍地区
+//              hjaddress: '',// 户籍地区
               hjAddressDetail:'',// 户籍详细地址
               occupation:'',// 职业
               workCompany:'',// 单位名称
@@ -154,10 +153,11 @@
             serviceType: this.serviceType,
             comGuid:this.comGuid,
             openid:this.openid,
-            zhimascore: this.formData.zhimascore,
-            jhid: this.formData.jhid
+            zhimascore: this.formData.zhimascore
           }
-          this.$router.push({path:`/step3/${this.formData.idNo}`, query});
+          // this.$router.push({path:`/step3/${this.formData.idNo}`, query});    20180814 by leoLig
+          this.$router.push({path:'/step3/' + this.formData.idNo});
+
         },
         getDictionary () { // 获取所有的字典
           api.queryDictionaryList().then(res => {
@@ -215,11 +215,10 @@
             const data = res.data.jsonRes[0]
             if(res.data.success){
               this.uuid = data.uuid // 用户标识
-              this.formData.jhid  = data.jhid
               this.formData.culture = data.culture // 文化程度
               this.formData.polity = data.polity   // 政治面貌
               this.formData.addressType = data.addressType    // 户口所在地类型
-              this.formData.hjaddress = value2name(data.hjaddress, ChinaAddressV4Data).toString()   // 户籍地区
+//              this.formData.hjaddress = value2name(data.hjaddress, ChinaAddressV4Data).toString()   // 户籍地区
               this.formData.hjAddressDetail = data.hjAddressDetail    // 户籍详细地址
               this.formData.occupation = data.occupation  // 职业
               this.formData.unitNumber = data.unitNumber // 企业编号
@@ -243,6 +242,7 @@
         }
       },
       mounted(){
+        if (window.AlipayJSBridge) this.nextBut = false
         if (this.serviceType == 1) {
           if (window.AlipayJSBridge) AlipayJSBridge.call('setTitle', {title: '居住信息登记'});
         } else {

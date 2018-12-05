@@ -13,9 +13,10 @@
     components: {},
     data() {
       return {
-        newsId:this.$route.params.newsId,
-        newstitle:'',
-        content:''
+        newName: decodeURI(this.$route.query.newName),
+        newsId: this.$route.params.newsId,
+        newstitle: '',
+        content: ''
       }
     },
     methods: {
@@ -28,18 +29,21 @@
         })
       },
     },
+    created () {
+      if (window.AlipayJSBridge) AlipayJSBridge.call('setTitle', {title: this.newName});
+    },
     mounted(){
       this.newsDetail(this.newsId);
     }
   }
 </script>
 <style lang="less" scoped>
-  .news_title{width:80%;margin:0 auto;margin-top:.2rem;text-align: center;font-size: .45rem;color:#3988d7;}
+  .news_title{width:94%;margin:0 auto;margin-top:.2rem;text-align: center;font-size: .45rem;color:#3988d7;}
   .new_info{
     width:100%;height:1rem;line-height: 1rem;text-indent: .2rem;font-size: .28rem;color:#999;overflow:hidden;display: flex;flex-wrap: wrap;
     span{display: block;flex: 1;text-align: center;}
   }
-  .news_cont{width:96%;line-height:.35rem;margin:0 auto;min-height:3rem;overflow:hidden;
+  .news_cont{width:94%;line-height:.35rem;margin:0 auto;min-height:3rem;overflow:hidden;
     p{padding:.2rem 0;line-height:.8rem;text-align: justify;}
   }
 </style>

@@ -1,13 +1,8 @@
-
 import baseUrl from './config';
 import axios from 'axios';
 import qs from 'qs';
-
-axios.defaults.baseURL = baseUrl;
-
-
+axios.defaults.baseURL = baseUrl //'http://192.168.18.38:8080/cnLaiSui/'//baseUrl;  
 export default {
-
   /*
    * 获取来穗数据字典
    * params: {object} 表单数据对象
@@ -25,74 +20,75 @@ export default {
   //     typeCode: params.typeCode
   //   }));
   // },
+  // 
+  // 
   queryDictionaryList (typeCode) {  // 本地数据字段（多个）
     return axios.get(`/mobile/queryDictionaryList?typeCodes=XZQ,XB,MZ,WHCD,ZZMM,HKXZ,HYZK,SF,JZFS,ZZDXZ,ZZSY,JZY`);
   },
-
-  // queryDictionaryList (params) {
-  //   return axios.get(`/mobile/queryDictionary?typeCode=${params.typeCode}`);
-  // },
-
+  queryDictionary (typeCode) {  // 本地数据字段(单个)
+    return axios.get(`/mobile/queryDictionary?typeCode=${typeCode}`);
+  },
+  queryDictionaryList (typeCode) {  // 本地数据字段（多个）
+    return axios.get(`/mobile/queryDictionaryList?typeCodes=XZQ,XB,MZ,WHCD,ZZMM,HKXZ,HYZK,SF,JZFS,ZZDXZ,ZZSY,JZY`);
+  },
   // 学历字典
   StudyGrade () {
     return axios.get('/mobile/dataDescList?type=StudyGrade');
   },
-
   // 户口类型字典
   getRegType () {
     return axios.get('/mobile/dataDescList?type=RegType');
   },
-
   // 婚姻状况字典
   getMarriyState () {
     return axios.get('/mobile/dataDescList?type=MarriyState');
   },
-
   // 政治面貌字典
   getPoliticalStatus () {
     return axios.get('/mobile/dataDescList?type=PoliticalStatus');
   },
-
   // 居住处所类型字典
   getHouseType () {
     return axios.get('/mobile/dataDescList?type=HouseType');
   },
-
   // 是否承租人字典
   getLessee () {
     return axios.get('/mobile/dataDescList?type=Lessee');
   },
-
   // 居住方式字典
   getLiveType () {
     return axios.get('/mobile/dataDescList?type=LiveType');
   },
-
   // 居住事由字典
   getReson () {
     return axios.get('/mobile/dataDescList?type=Reson');
   },
-
   // 与填表人关系字典
   getRelation () {
     return axios.get('/mobile/dataDescList?type=Relation');
   },
-
   // 就业情况字典
   getEmploymentStatus () {
     return axios.get('/mobile/dataDescList?type=employmentStatus');
   },
-
   /*
    * 首页新闻列表
    * param: page 新聞页数
-   * param: newsType 新聞类型
-   * param: newsArea 区域，目前写死南沙
+   * newsType: 新闻类型
+   * index: 列表页码
+   * newsArea: 地区码
    */
-  getNewsList (page,type) {
-    return axios.get(`/mobile/newsWebIntf/newslist?opentype=1&rows=5&newsType=${type}&index=${page}&newsArea=440115`);
+  newsList (params) {
+    return axios.get(`/mobile/newsWebIntf/newslist`,{
+      params: {
+        newsType: params.newsType,
+        index: params.index,
+        newsArea: params.newsArea,
+        opentype: 1,
+        rows: params.rows ? params.rows : 10
+      }
+    });
   },
-
   /*
    * 新闻詳情
    * param: newsId 新聞id
@@ -118,18 +114,36 @@ export default {
   },
 
   /*
-   * 首页banner
-   * params: 表单数据对象
+   * 获取从支付宝返回的信息
    */
-  homePage () {
-    return axios.post('/mobile/newsWebIntf/homePage')
+  getUserDetails (comGuid) {
+    return axios.get(`/mobile/peopleDetails?comGuid=${comGuid}&homeType=lspy_`);
   },
 
   /*
-   * 获取从支付宝返回的信息
+   * 新获取返回的信息(支付&民生)
    */
-  peopleDetails (comGuid) {
-    return axios.get(`/mobile/peopleDetails?comGuid=${comGuid}&homeType=lsns_`);
+  getPeopleDetailsMS (params) {
+    return axios.get(`/mobile/peopleDetailsMS?idCard=${params.idCard}&homeType=lspy_`);
+  },
+  /*
+   * 新增接资料(支付&民生)
+   */
+  setPeopleDetailsMS (params) {
+    return axios.get(`/mobile/dataInit?idCard=${params.idCard}&homeType=lspy_`);
+  },
+
+  /*
+   * 获取从民生返回的信息     20180813+ by leoLing
+  */
+  getUserDetailsMS (params) {
+    return axios.get(`/mobile/checkInfo?idCard=${params.idCard}&userName=${params.userName}&homeType=lspy_`);
+  },
+  /*
+   * 获取从支付宝返回的信息  
+  */
+  getUserDetailsZFB (params) {
+    return axios.get(`/mobile/loadRegistMsg?idCard=${params.idCard}&homeType=lspy_`);
   },
 
   /*
@@ -138,49 +152,15 @@ export default {
    * formData: 表单数据对象
    */
   saveResideInfo (params) {
-    return axios.post(`/mobile/peopleSave?jsonStr=${JSON.stringify(params.formData)}&homeType=${params.homeType}`)
+    return axios.post(`/mobile/peopleSave?jsonStr=${JSON.stringify(params.formData)}&homeType=lspy_`)
   },
 
-  /*
-   * 保存预约信息接口
-   * params: {object} 表单数据对象
-   *  openid: 支付宝id
-   *  idCard: 身份证号
-   */
-  saveAppointment (params) {
-    return axios.get('/mobile/saveAppointment', {
-      params: {
-        openid: params.openid,
-        idCard: params.idCard,
-        checktimeidls: params.checktimeidls,
-        checktimels: params.checktimels
-      }
-    })
-  },
-
-  /*
-   * 查询预约详情
-   * params: {object} 表单数据对象
-   *  openid: 支付宝id
-   *  idCard: 身份证号
-   *  appointmentId: 预约号
-   */
-  appointmentDetail (params) {
-    return axios.get(`/mobile/appointmentDetail`, {
-      params: {
-        openid: params.openid,
-        idCard: params.idCard,
-        appointmentId: params.appointmentId
-      }
-    })
-  },
-
-  /*
+  /*/mobile/peopleSave?jsonStr=
    * 详情信息回显
-   * params: {string} 身份证号码
+   * params: {string} 省份证号码
    */
   rebackPeopleInfo (params) {
-    return axios.post(`/mobile/rebackPeopleInfo?idCard=${params}`)
+    return axios.post(`/mobile/rebackPeopleInfo?idCard=${params}&homeType=lspy_`)
   },
 
   /*
@@ -189,10 +169,10 @@ export default {
    * jhid  交易编号
    */
   queryUploadLdryResult (params) {
-    return axios.get(`/mobile/queryUploadLdryResult`, {
+    return axios.get(`/mobile/queryUploadLdryResult?homeType=lspy_`, {
       params: {
         jhid: params.jhid,
-        idCard: params.idCard,
+				idCard: params.idCard,
         opentype: 1,
         openid: params.openid
       }
@@ -215,13 +195,21 @@ export default {
    * childrenArr: 用户主子女主键ID
    */
   deleteChildren (params) {
-    return axios.get('/mobile/deleteChildren', {
+    return axios.get('/mobile/deleteChildren?homeType=lspy_', {
       params: {
         delType: params.delType,
         parentUuid: params.parentUuid,
         childrenArr: params.childrenArr
       }
     })
+  },
+
+  /*
+   * 首页banner
+   * params: 表单数据对象
+   */
+  homePage () {
+    return axios.post('/newsWebIntf/homePage')
   },
 
   /*
@@ -233,26 +221,16 @@ export default {
 
   /*
   *  查询办理居住证办理剩余天数接口
-   * params: {object} 表单数据对象
-   * idCard: 身份证
-   * openid: openid
-   * name: 姓名
   * */
-  daysRemailing (params) {
-    return axios.get('/mobile/daysRemailing', {
-      params: {
-        idCard: params.idCard,
-        name: params.name,
-        openid: params.openid
-      }
-    })
+  daysRemailing (idCard) {
+    return axios.get('/mobile/daysRemailing?idCard='+idCard)
   },
 
   /*
    *  查询是否有传图片
    * */
   isHavePic (idCard) {
-    return axios.get('/mobile/isHavePic?idCard='+idCard)
+    return axios.get('/mobile/isHavePic?idCard='+idCard+'&homeType=lspy_')
   },
 
   /*
@@ -287,7 +265,6 @@ export default {
     return axios.post('/mobile/laisuiSendMessage',qs.stringify({
       openid: params.openid,
       wxsqn: params.wxsqn,
-      account: params.account,
       opentype: 1,
       mobile: params.mobile
     }))
@@ -308,7 +285,7 @@ export default {
       opentype: 1,
       xm: params.name,
       zjhm: params.idCard,
-      // password: params.passWord,
+      password: params.passWord,
       mobile: params.mobile,
       checkCode: params.identifyingCode
     }))
@@ -323,7 +300,6 @@ export default {
    * */
   login (params) {
     return axios.post('/mobile/laisuiLogin',qs.stringify({
-      opentype: 1,
       openid: params.openid,
       wxsqn: params.wxsqn,
       account: params.account,
@@ -388,7 +364,7 @@ export default {
     }))
   },
   /*
-   *  街路巷查询 (图南)
+   *  街路巷查询
    *  params {Object}
    *  openid: 支付宝id
    *  wxsqn: 微信授权码
@@ -407,33 +383,12 @@ export default {
       currentPage: params.currentPage
     }))
   },
-
-  /*
-   *  街路巷查询（本地）
-   *  params {Object}
-   *  typeCode: 街镇代码
-   *  itemName: 街路巷名称，支持模糊查询
-   *  currentPage 分页页码
-   *  pageSize 单页数据条数,目前写死50条
-   * */
-  queryDictionaryListPage (params) {
-    return axios.get('/mobile/queryDictionaryListPage',{
-      params: {
-        typeCode: params.typeCode,
-        itemName: params.itemName,
-        currentPage: params.currentPage,
-        pageSize: 50
-      }
-    })
-  },
-
   /*
    *  门牌号查询/出租屋（栋）信息
    *  params {Object}
    *  openid: 支付宝id
    *  wxsqn: 微信授权码
    *  jddm: 街道代码
-   *  mpmc: 门牌名称
    *  currentPage 当前页 如果为空或不是正整数，默认为1
    * */
   queryFwxxzPage (params) {
@@ -443,7 +398,6 @@ export default {
       account: params.account,
       opentype: 1,
       jddm: params.jddm,
-      mpmc: params.mpmc,
       currentPage: params.currentPage
     }))
   },
@@ -478,7 +432,7 @@ export default {
   queryDwxxPage (params) {
     return axios.post('/mobile/laisuiQueryDwxxPage',qs.stringify({
       openid: params.openid,
-      wxsqn: params.wxsqn,
+      wxsqn: params.wxsqn ? params.wxsqn : params.openid,
       account: params.account,
       opentype: 1,
       dwmc: params.dwmc,
@@ -555,7 +509,8 @@ export default {
      * */
   selectJiFen (params) {
     return axios.post('/mobile/selectJiFen',qs.stringify({
-      userId: params.userId
+      userId: params.userId,
+      name: params.name,
     }))
   },
   /*
@@ -574,8 +529,8 @@ export default {
        *  index: 页数
        *  rows: 每页条数
        * */
-  orderList (page) {
-    return axios.post(`/mobile/orderList?rows=6&index=${page}`)
+  orderList (page,idCard) {
+    return axios.post(`/mobile/orderList?rows=6&index=${page}&idCard=${idCard}`)
   },
   /*
        *  兑换记录列表详情
@@ -599,62 +554,307 @@ export default {
       goodsId: params.goodsId
     }))
   },
-  /**社保查询接口 */
-  /**个人信息查询 */
-  findPersonalBasicInfo(params) {
-    return axios.get(`https://zwt.createt.cn/gzGovTong/mobile/shebao/findPersonalBasicInfo?aac147=${params.idCard}`);
-  },
-  /**缴费状态查询
-   * personalNo: 社保号
-   *  idCard: 身份证
-   *  type: 业务类型，1.养老 2.农转居  3.失业保险 4.工伤保险 5.生育保险
-   */
-  personalPaymentStatus(params) {
-    https://zwt.createt.cn/gzGovTong/mobile/shebao/personalPaymentStatus
-      return axios.get('https://zwt.createt.cn/gzGovTong/mobile/shebao/personalPaymentStatus', {
-        params: {
-          personalNo: params.personalNo,
-          idCard: params.idCard,
-          type: params.type
-        }
-      })
+  /*
+   *  订单新增接口(去程)
+   *  params {Object}
+   *  custOrderId: 主键id
+   * */
+  addTripOrder (params) {
+    return axios.post('/mobile/addTripOrder',qs.stringify({
+      custOrderId: params.custOrderId
+    }))
   },
   /*
-   *  个人缴费历史查询（城镇职工/农转居）
-   *  params {Object} 参数对象
-   *  aac001: 个人编号(必填)
-   *  aae140: 险种类型 1.养老 2.农转居  3.失业保险 4.工伤保险 5.生育保险；险种参数为空，返回的是全部险种
-   *  aae003s: 起始年月
-   *  aae003d: 结束年月
+   *  订单新增接口(返程)
+   *  params {Object}
+   *  openId: 主键id
    * */
-  personalContribution(params) {
-    return axios.get('https://zwt.createt.cn/gzGovTong/mobile/shebao/personalContribution', {
-      params: {
-        aac001: params.aac001,
-        aae140: params.aae140,
-        aae003s: params.aae003s,
-        aae003d: params.aae003d
-      }
-    })
+  addReturnOrder (params) {
+    return axios.post('/mobile/addReturnOrder',qs.stringify({
+      openId: params.openId
+    }))
+  },
+  /*
+   *  物流信息查询接口
+   *  params {Object}
+   *  expressNbr: 邮件号
+   * */
+  getMailTrack (params) {
+    return axios.post('/mobile/getMailTrack',qs.stringify({
+      expressNbr: params.expressNbr
+    }))
+  },
+  /*
+   *  邮件号获取接口
+   *  params {Object}
+   *  amount: 主键id
+   *  expressType: 邮件号类型 1：去程， 2：返程
+   * */
+  getExpressNbr (params) {
+    return axios.post('/mobile/getExpressNbr',qs.stringify({
+      amount: params.amount,
+      expressType: params.expressType
+    }))
+  },
+  /*
+   *  物流信息查询接口
+   *  params {Object}
+   *  custOrderId: 主键id
+   *  expressType: 邮件号类型 1：去程， 2：返程
+   * */
+  queryExpressNbr (params) {
+    return axios.post('/mobile/queryExpressNbr',qs.stringify({
+      custOrderId: params.custOrderId,
+      expressType: params.expressType
+    }))
+  },
+  /*
+   *  揽收状态回调接口(客户端提供)
+   *  params {String} 主键
+   * */
+  pushPickupStatus (params) {
+    return axios.post('/mobile/pushPickupStatus',qs.stringify({
+      params: params.params
+    }))
   },
 
   /*
-   *  医疗缴费历史历史查询（城镇职工/农转居）
-   *  params {Object} 参数对象
-   *  aac001: 个人编号(必填)
-   *  aae030: 起始年月
-   *  aae031: 结束年月
+   *  ems创建订单
+   *  params {String} 主键
+   *  idcard  身份证号
+   *  name 姓名
+   *  phoneNo 手机号
+   *  area 省市区
+   *  receiveAddress 详细地址
+   *  cost 邮费
+   * *//*
+  emsOrderCreation (params) {
+	  /*return axios.post('/mobile/emsOrderCreation',qs.stringify({
+			oorderid: params.idcard,
+      sendername: params.name,
+      sendertel: params.phoneNo,
+      senderarea: params.area,
+      senderaddress: params.receiveAddress
+      //cost: params.cost
+    }))
+    return axios.post('/mobile/infoSave',
+    	qs.stringify({
+    		sendername: params.sendername,
+      	sendertel: params.sendertel,
+      	senderarea: params.senderarea,
+      	senderaddress: params.senderaddress,
+      	courierAim: params.courierAim
+    	})
+    )
+  },*/
+  /*
+   *  ems支付
+   *  custOrderId  订单ID
+   *  orderName 订单名称
+   *  price 邮费
+   *  remark ；备注
+   * 
+  emsPay (params) {
+    return axios.get('/mobile/pay',{
+	    	params:{
+	    		custOrderId: params.custOrderId,
+	      	orderName: params.orderName,
+	      	price: params.price,
+	      	remark: params.remark
+	    	}
+    	}
+    )
+  },*/
+	/*
+   * 支付后详情
+   * 
+  courierInfo (params) {
+    return axios.get('/mobile/courierInfo',{
+	    	params:{
+	    		buyAccount: params.buyAccount,
+	    	}
+    	}
+    )
+  },*/
+  /*
+   * 申领EMS-提交信息 
    * */
-  findMedicalPayHistory(params) {
-    return axios.get('https://zwt.createt.cn/gzGovTong/mobile/shebao/findMedicalPayHistory', {
-      params: {
-        aae031: params.aae031,
-        aae030: params.aae030,
-        aac001: params.aac001
-      }
-    })
+  emsOrderCreation (params) {
+    return axios.post(`/mobile/addEMSOrder?jsonStr=${JSON.stringify(params)}`)
+  },
+  /*
+   * 申领EMS-物流信息
+   * */
+  logisticsEMS (params) {
+    return axios.post('/mobile/expressResidentialInfo',qs.stringify({
+      expressNbr: params.expressNbr,
+      custOrderId: params.custOrderId
+    }))
+  },
+  /*
+   * 签注--居住证签注刷脸后数据 本接口用于查询居住证，入口卡片展示。
+   * */
+  saolianJZZData (alipayId) {
+ return axios.get('/mobile/alipaypeopleinfo?alipayId='+ alipayId)    
+  },
+  /*
+   * 签注--居住证签注刷脸后数据 本接口用于判断用户点居住签注时跳转。
+   * */
+  checkURL (params) {
+    return axios.post('/mobile/entrance',qs.stringify({
+      idCard: params.idCard,
+      openType: params.openType,
+      openId: params.openId,
+
+    })) 
   },
 
+  /*
+   * 签注--居住证签注-入口
+   * */
+  requireJZZData(params) {
+    return axios.post(`/mobile/resPermitCard?jsonStr=${JSON.stringify(params)}`)
+  },
+  /*
+   * 签注--校验是否有居住证 
+   * */
+  checkResidencePermi (params) {
+    return axios.post(`/mobile/checkResPermit?jsonStr=${JSON.stringify(params)}`)
+  },
+  /*
+   * 签注--校验资格
+   * */
+  checkQualification (params) {
+    return axios.post(`/mobile/checkCondition?jsonStr=${JSON.stringify(params)}`)
+  },
+  /*
+   * 签注--查询数据
+   * */
+  requireData (params) {
+    return axios.post(`/mobile/rollbackData?jsonStr=${JSON.stringify(params)}`)
+  },
+  /*
+   * 签注--居住登记信息变更
+   * */
+  regJZDJDatas (params) {
+    return axios.post('/mobile/renewChangeInfo',qs.stringify({
+      rid: params.rid,
+      opentype: params.opentype,
+      orginType: params.orginType,
+    }))
+  },
+  /*
+   * 签注--居住登记信息变更保存提产
+   * */
+  setJZDJDatas (params) {
+    return axios.post(`/mobile/infoSubmit?jsonStr=${JSON.stringify(params)}`)
+  },
+  /*
+   * 签注--是否重点人员
+   * */
+  checkZDRY (rid) {
+    return axios.post('/mobile/checkSpecial?rid='+rid)
+  },
+  /*
+   * 签注--领取方式
+   * */
+  getWay(params) {
+    return axios.post('/mobile/receiveType',qs.stringify({
+      rid: params.rid,
+      receiveType: params.receiveType,
+    }))
+  },
+  /*
+   * 签注--提交结果
+   * */
+  setQZDatas(params) {
+    return axios.post('/mobile/resPermitSubmit',qs.stringify({
+      rid:params.rid,
+    }))
+  },
+  /*
+   * 签注--查询是否能EMS领取
+   * */
+  checkLQState(rid) {
+    return axios.post(`/mobile/receivelimit?rid=${rid}`);
+  },
 
+  /*
+   * 签注--服务站信息
+   * */
+  requireServiceInfo(params) {
+    return axios.post('/mobile/serviceInfo',qs.stringify({
+      idCard:params.idCard,
+    }))
+  },
+  /*
+   * 签注--办理进度
+   * */
+  QZprogress(rid) {
+    return axios.post(`/mobile/renewProgress?rid=${rid}`);
+  },
+  /*
+   * 签注--街道办理进度
+   * */
+  JDprogress(rid) {
+    return axios.post(`/mobile/queryResult?rid=${rid}`);
+  },
+  /*
+   * 签注--上传图片回滚
+   * */
+  requirePic(params) {
+    return axios.post('/mobile/fileRollback',qs.stringify({
+      rid:params.rid,
+      step:params.step,
+
+    }))
+  },
+  /*
+   * 签注--上传图片
+   * */
+  setUpPic(params) {
+    return axios.post('/mobile/ResPermitFileUpload',qs.stringify({
+      rid:params.rid,
+      step:params.step,
+      realType:params.realType,
+      file:params.file,
+      liveType:params.liveType,
+      idCardType:params.idCardType,
+      conditionType:params.conditionType,
+    }))
+  },
+  /*
+   * 签注--上传图片
+   * */
+  submiUpPic(params) {
+    return axios.post('/mobile/nextSubmit',qs.stringify({
+      rid:params.rid,
+      step:params.step,
+      idCardType:params.idCardType,
+      conditionType:params.conditionType,
+    }))
+  },
+  /*
+   * 签注--删除单张图片
+   * */
+  delImgData(fid) {
+    return axios.post(`/mobile/fileDel?fid=${fid}`);
+  },
+  /*
+   * 签注--查居住证信息
+   * */
+  requireJZZ(idCard) {
+    return axios.post(`/mobile/residentialPermit?idCard=${idCard}`);
+  },
+  /*
+   * 签注--EMS物流信息
+   * */
+  requireEMSWL(params) {
+    return axios.post('/mobile/expressResidentialInfo',qs.stringify({
+      expressNbr:params.expressNbr,
+      expressNbr:params.expressNbr,
+    }))
+  },
 
 }
+//

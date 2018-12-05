@@ -32,6 +32,7 @@
           recordList:[],
           currentPage: 1,
           showBtline:false,
+          idCard:this.$route.params.idCard,
           pullupConfig:{
             content: '正在努力加载...',
             pullUpHeight: 60,
@@ -48,10 +49,10 @@
       infinite() { // 上拉加载
         this.currentPage ++;
         console.log('上拉加载',this.currentPage);
-        this.orderList(this.currentPage);
+        this.orderList(this.currentPage,this.idCard);
       },
-      orderList (pageIndex) {  // 兑换列表查询
-        api.orderList(pageIndex).then((res) => {
+      orderList (pageIndex,idCard) {  // 兑换列表查询
+        api.orderList(pageIndex,idCard).then((res) => {
           if(res.data.success){
             if (pageIndex == 1){
               this.recordList = res.data.jsonRes
@@ -74,7 +75,7 @@
 
     },
     mounted(){
-      this.orderList(this.currentPage);
+      this.orderList(this.currentPage,this.idCard);
       this.$nextTick(() => {
         this.$refs.wrapper.reset();
       })

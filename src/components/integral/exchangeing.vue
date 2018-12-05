@@ -39,7 +39,7 @@
             <div v-if="thirdshow" class="dhSuccess">
               <img class="successImg" src="../../../static/images/icon_fial.png" alt="">
               <div class="regWenzi">兑换失败！</div>
-              <div class="redColor">当前商品库存不足</div>
+              <div class="redColor">{{msgError}}</div>
             </div>
           </confirm>
         </div>
@@ -68,6 +68,7 @@
         show2:false,
         xqActive:false,
         loadtext:'兑换中',
+        msgError:'',
         showLoading:false,
         title:'',
         title2:'',
@@ -78,37 +79,47 @@
         oneshow:true,
         thirdshow:false,
         goodsid:this.$route.params.goodsid,
+        idCard:this.$route.params.idCard,
         littlepic:'',
         goodstitle:'',
         integration:'',
         goodsdesc:'',
         brand:'',
-        orderId:''
+        orderId:'',
+        allJfen:'',//积分数
+        stock:'' //商品个数
 
       }
     },
     methods: {
       onCancel () {  //取消兑换
         console.log('on cancel')
+        this.actionState = 1;
+        this.oneshow = true;
+        this.twoshow = false;
+        this.thirdshow = false;
+        this.xqActive = false;
+        this.cancel = '取消';
+        this.queding = '确定';
       },
       onShow () {
         console.log('on show')
       },
       onConfirm () {  //确认兑换
-        if (this.actionState == 1) { //确定按钮
-          this.changIntegration();
-          this.showLoading = true;
-        } else if (this.actionState == 2) {  // 查看详情
-          let orderId = this.orderId;
-          this.$router.push({path:`/exchangeDetails/${orderId}`});
-//          this.$router.push({name: '/exchangeDetails', params:{orderId:123}})
-        }
-
+          if (this.actionState == 1) { //确定按钮
+            this.changIntegration();
+            this.showLoading = true;
+          } else if (this.actionState == 2) {  // 查看详情
+            let orderId = this.orderId;
+            this.$router.push({path:`/exchangeDetails/${orderId}`});
+          }else if(this.actionState == 3){
+            this.$router.go(-1);
+          }
 
       },
       changIntegration () {  // 兑换接口
         api.changIntegration({
-          idCard: '440681198710202352',
+          idCard: this.idCard,
           goodsId: this.goodsid
         }).then((res) => {
           if(res.data.success){
@@ -119,16 +130,20 @@
             this.cancel = '关闭';
             this.queding = '查看详情';
             this.xqActive = true;
-            this.actionState = 2
+            this.actionState = 2;
             this.showLoading = false;
 //            this.closeConfirm = true;
           }else{
+            this.msgError = res.data.msg;
+            this.oneshow = false;
             this.thirdshow = true;
             this.xqActive = true;
-            this.queding = '继续兑换';
+            this.queding = '返回首页';
+            this.showLoading = false;
+            this.actionState = 3;
+
           }
         })
-        console.log('555',this.orderId)
       },
       clickConfirm () {  //立即兑换
         const _this = this;
@@ -144,6 +159,15 @@
           this.integration = res.data.jsonRes[0].integration
           this.goodsdesc = res.data.jsonRes[0].goodsdesc
           this.brand = res.data.jsonRes[0].brand
+          this.stock = res.data.jsonRes[0].stock
+        })
+      },
+      selectJiFen () { //再查一次我的积分
+        api.selectJiFen({
+          userId: this.idCard
+        }).then((res) => {
+          this.allJfen = res.data.jsonRes[0].jifen;
+          console.log('889',typeof this.allJfen);
         })
       }
     },
@@ -172,7 +196,9 @@
       padding:0 .30rem .62rem .30rem;font-size:.28rem;background-color:#fff;overflow:hidden;
       h3:nth-of-type(1){margin-top:.35rem;}
       h3{font-weight:normal;color:#3988d7;border-bottom:.02rem solid #f2f2f7;padding-bottom:.20rem;margin-top:.83rem;}
-      p{color:#5a6570;line-height:.45rem;margin-top:.23rem;text-align:justify;}
+      p{
+        color:#5a6570;line-height:.45rem;margin-top:.23rem;text-align:justify;overflow:hidden;
+      }
     }
     .details_btn{
       padding:.53rem 0 .43rem 0;
@@ -201,4 +227,5 @@
   .exchTanc .weui-dialog__bd .regWenzi{font-size:.36rem;}
   .exchTanc .weui-dialog__bd .successImg{width:1.58rem;}
   .lastXqing .weui-dialog__ft .weui-dialog__btn_primary{background-color:#f3f3f3;color:#353535 !important;}
+  .details_ms .attr-list-hd{overflow:hidden;padding:0 !important;}
 </style>

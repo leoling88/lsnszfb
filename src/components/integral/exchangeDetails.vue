@@ -7,7 +7,7 @@
         </div>
         <div class="details_main">
           <div class="main_title">{{goodstitle}}</div>
-          <div class="main_title">兑换密码：<span>{{exchangecode}}</span></div>
+          <div class="main_title">兑换密码：<span>{{conid}}</span></div>
           <div class="main_xq">
             <div>积分消费：{{ointegration}}</div>
             <div>订单编号：{{orderid}}</div>
@@ -41,7 +41,7 @@
           createdate:'',
           goodsdesc:'',
           brand:'',
-          exchangecode:'',
+          conid:'',
           remark:''
         }
     },
@@ -58,8 +58,8 @@
             this.createdate = res.data.jsonRes[0].createdate
             this.goodsdesc = res.data.jsonRes[0].goodsList.goodsdesc
             this.brand = res.data.jsonRes[0].goodsList.brand
-            this.exchangecode = res.data.jsonRes[0].exchangeList.exchangecode
-            this.remark = res.data.jsonRes[0].exchangeList.remark
+            this.conid = res.data.jsonRes[0].conid
+            this.remark = res.data.jsonRes[0].remark
           }
         })
       },

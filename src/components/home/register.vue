@@ -4,14 +4,16 @@
 
         <dl class="logo_box">
           <dt><img src="../../../static/images/laisui_logo.png"/></dt>
-          <dd>南沙区来穗人员服务管理局</dd>
+          <dd>番禺区来穗人员服务管理局</dd>
         </dl>
 
         <!--注册-->
+        <!--<x-input v-model="formData.name" title="姓名：" placeholder="请输入姓名" :show-clear="true" placeholder-align="right" text-align="right" :required="true" :is-type="inputValid.name" ref="name"></x-input>-->
+        <!--<x-input v-model="formData.idCard" title="身份证：" placeholder="请输入身份证号" :show-clear="true" placeholder-align="right" text-align="right" :required="true" :is-type="inputValid.idNo" ref="idCard"></x-input>-->
         <cell title="姓　名" :value="formData.name"></cell>
         <cell title="身份证" :value="formData.idCard"></cell>
-        <x-input v-model="formData.phone" title="手机号" placeholder="请输入手机号码" :show-clear="true" placeholder-align="right" text-align="right" :required="true" :is-type="inputValid.phone" ref="phone" :max="11"></x-input>
-        <x-input v-model="formData.identifyingCode" title="短信验证码" placeholder="请输入验证码" :show-clear="true" :required="true" class="last_input" ref="identifyingCode" :max="6">
+        <x-input v-model="formData.phone" title="手机号" placeholder="请输入手机号码" :show-clear="true" placeholder-align="right" text-align="right" :required="true" :is-type="inputValid.phone" ref="phone"></x-input>
+        <x-input v-model="formData.identifyingCode" type="tel" title="短信验证码" placeholder="请输入验证码" :show-clear="true" :required="true" class="last_input" ref="identifyingCode">
           <input type="button" slot="right" class="identify_btn" @click="getIdentifyCode" :value="identify.text" :disabled="identify.disabled">
         </x-input>
         <p class="tips" v-show="isShowTips">温馨提示：<span>验证码十分钟内有效！</span></p>
@@ -42,8 +44,9 @@
           comGuid: this.$route.query.comGuid,
           openid: this.$route.query.openid,
           wxsqn: this.$route.query.openid,
-          name: this.$route.query.name.replace(/\s/g, ''),  // 姓名
+          name: this.$route.query.name.replace(/\s/g, ''),
           idCard: this.$route.query.idCard,  // 身份证号
+//          passWord: '',  // 密码
           phone: '',  // 手机码
           identifyingCode: ''  // 验证码
         },
@@ -100,39 +103,30 @@
           identifyingCode: this.formData.identifyingCode
         }).then((res) => {
           const _this = this
-          if (res.data.success) {
-            const data = JSON.parse(res.data.jsonRes[0]);
-            if (Number(data.ackCode) == 1) { // 注册成功后自动登录
-              api.login({
-                openid: this.formData.openid,
-                wxsqn: this.formData.openid,
-                account: this.formData.idCard
-              }).then((res) => {
-                if (res.data.success) {
-                  const data = JSON.parse(res.data.jsonRes[0]);
-                  if (Number(data.ackCode) == 1) {
-                    this.$store.commit('SHOWTOAST', '注册成功！');
-                    setTimeout(() => {
-                      _this.$router.push({path:`/step1/${this.formData.comGuid}/${this.formData.openid}`})
-                    }, 2500)
-                  } else {
-                    this.$store.commit('SHOWTOAST', data.errorMessage);
-                  }
-                } else {
-                  this.$store.commit('SHOWTOAST', '网络异常！');
-                }
-              }).catch(() => {
-                this.$store.commit('SHOWTOAST', '网络异常！');
-              })
-            } else {
-              this.$store.commit('SHOWTOAST', data.errorMessage);
-            }
+          const data = JSON.parse(res.data.jsonRes[0])
+          console.log('222',Number(data.ackCode));
+          if (Number(data.ackCode) == 1) { // 注册成功后自动登录
+            // api.login({
+            //   openid: this.formData.openid,
+            //   wxsqn: this.formData.openid,
+            //   account: this.formData.idCard
+            // }).then((res) => {
+            //   const data = JSON.parse(res.data.jsonRes[0])
+            //   if (Number(data.ackCode) == 1) {
+            //     this.$store.commit('SHOWTOAST', '注册成功！');
+            //     setTimeout(() => {
+            //       _this.$router.push({path:`/step1/${this.formData.comGuid}/${this.formData.openid}`})
+            //     }, 2500)
+            //   } else {
+            //     this.$store.commit('SHOWTOAST', data.errorMessage);
+            //   }
+            // })
+            location.href = '/cnLaiSui/mobile/laisuiHomeIndex?homeType=lspy_'
+
           } else {
-            this.$store.commit('SHOWTOAST', '网络异常！');
+            this.$store.commit('SHOWTOAST', data.errorMessage);
           }
-        }).catch((res) => {
-          this.$store.commit('SHOWTOAST', '网络异常！');
-        })
+        });
       },
       validate () { // 校验表单
         let valid = false;
@@ -142,7 +136,7 @@
         } else if (!this.$regExp.phone.test(this.formData.phone)) {
           errorMsg = '手机号不合法！'
         } else if (!this.formData.identifyingCode) {
-          errorMsg = '请输入验证码！'
+          errorMsg = '请输入验证码2！'
         } else {
           valid = true
           errorMsg = ''
@@ -165,36 +159,31 @@
             mobile: this.formData.phone,
             account: this.formData.idCard
           }).then((res) => {
-            if (res.data.success) {
-              const data = JSON.parse(res.data.jsonRes[0]);
-              if (Number(data.ackCode) == 1) {
-                let countDownTime = 60
-                let timer = setInterval(() => {
-                  countDownTime --
-                  if (countDownTime !== 0) {
-                    this.identify.text = `${countDownTime}秒后获取`
-                  } else {
-                    this.identify = {
-                      disabled: false,
-                      text: '获取验证码'
-                    }
-                    clearInterval(timer)
+            const data = JSON.parse(res.data.jsonRes[0])
+            if (Number(data.ackCode) == 1) {
+              let countDownTime = 60
+              let timer = setInterval(() => {
+                countDownTime --
+                if (countDownTime !== 0) {
+                  this.identify.text = `${countDownTime}秒后再获取`
+                } else {
+                  this.identify = {
+                    disabled: false,
+                    text: '获取验证码'
                   }
-                }, 1000);
-                this.isShowTips = true
-              } else {
-                this.identify.disabled = false
-                this.$store.commit('SHOWTOAST', data.errorMessage);
-              }
+                  clearInterval(timer)
+                }
+              }, 1000);
+              this.isShowTips = true
             } else {
-              this.$store.commit('SHOWTOAST', '网络异常！');
+              this.identify.disabled = false
+              this.$store.commit('SHOWTOAST', data.errorMessage);
             }
           }).catch((res) => {
             this.identify = {
               disabled: false,
               text: '获取验证码'
             }
-            this.$store.commit('SHOWTOAST',  '网络异常！');
           })
         }
       }

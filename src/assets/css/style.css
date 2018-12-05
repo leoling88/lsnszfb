@@ -59,12 +59,6 @@ img{ width: 100%;height:auto;}
 .ell{ overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 ul,li{list-style: none;}
 
-
-/*input::-ms-input-placeholder{text-align: center;}
-input::-webkit-input-placeholder{text-align: center;}*/
-
-
-
 /*模板宽度*/
 .template_container{width:100%;height:100%;overflow: hidden;}
 
@@ -238,6 +232,7 @@ input::-webkit-input-placeholder{  color: #ccc;opacity:1;  }
 .mt25{margin-top:0.25rem;}
 .mb25{margin-bottom:0.25rem;}
 .mt30{margin-top:0.3rem;}
+.mb30{margin-bottom:0.3rem;}
 .mt35{margin-top:0.35rem;}
 .mt50{margin-top:0.5rem;}
 .mt65{margin-top:0.65rem;}
@@ -295,43 +290,30 @@ input::-webkit-input-placeholder{  color: #ccc;opacity:1;  }
   -moz-osx-font-smoothing: grayscale;
 }
 
-
+.weui-cell__ft{max-width:75%;color:#333 !important;}
+.search_input{width:100%;display: block;}
+.search_input .weui-cell__hd .weui-icon{padding-left: .25rem;}
+.search_input .weui-cell__bd{flex: 3;}
+.search_input .weui-cell__ft{flex: 1;}
+.search_input .weui-cell__ft{text-align:left;color:#1F67D0;}
+.search_input .weui-cell__ft .suer_btn{width:1.15rem;display: inline-block;vertical-align: -.04rem;text-align: center;float: right;}
+.search_input .weui-cell__ft .weui-icon{vertical-align: -.04rem;}
 
 .vux-cell-disabled.custom_cell .vux-label{color:#333;}
 
-.weui-cell__ft{float: right;}
-.re_select_btn{display: inline-block;width:.8rem;line-height: .8rem;background: #0091FF;float: right;}
-.vux-x-switch.weui-cell_switch.switch_btn{padding:0;margin:0;}
-.vux-x-switch.weui-cell_switch.switch_btn:before{display: none;}
-.vux-x-switch.weui-cell_switch.switch_btn .weui-switch{width:1.11rem;height:.6rem;}
-.vux-x-switch.weui-cell_switch.switch_btn .weui-switch:before{width:1rem;height:100%;}
-.vux-x-switch.weui-cell_switch.switch_btn .weui-switch:after{width:.6rem;height:.55rem;}
+.vux-flexbox .vux-flexbox-item{color:#0091FF;}
+.vux-flexbox .vux-flexbox-item:first-child{color:#333;}
 
-.load_more.weui-loadmore_line .weui-loadmore__tips{padding:0 .5rem;display: inline;}
+.search_input .weui-input{height:41px;}
+.search_input .weui-cell__bd{flex: 3;}
 
-/*customSelectorSearch组件输入框*/
-.search_box .search_input .weui-input{height:41px;}
-.search_box .search_input{width:100%;}
-.search_box .search_input .weui-cell__hd .weui-icon{padding-left: .25rem;}
-.search_box .search_input .weui-cell__bd{flex: 3;}
-.search_box .search_input .weui-cell__ft{flex: 1;}
-.search_box .search_input .weui-cell__ft{text-align:left;color:#1F67D0;}
-.search_box .search_input .weui-cell__ft .suer_btn{width:1.15rem;display: inline-block;vertical-align: -.04rem;text-align: center;float: right;}
-.search_box .search_input .weui-cell__ft .weui-icon{vertical-align: -.04rem;}
+.selector_box.no_before .custom_cell:before{opacity: 0}
 
-/*//修改vux样式*/
-/*.form_cont .weui-input{height:.8rem !important;line-height:.8rem !important;}*/
-/*.form_cont .weui-cell{padding:5px 15px !important;line-height:.8rem !important;}*/
+ .check_detail_btn{display:block;width: 6.68rem;height:.88rem;line-height:.88rem;margin:1rem auto 0 auto; border-radius: .1rem;text-align: center;color:#fff;font-size: .28rem;background: #0091FF;}
 
-.selector_box.no_before .custom_cell:before,.weui-cell.no_before::before{opacity: 0}
+.no_before .weui-cell:before,.no_before:before{display: none;}
 
-.check_detail_btn{display:block;width: 5.8rem;height:.88rem;line-height:.88rem;margin:1rem auto 0 auto; border-radius: .1rem;text-align: center;color:#fff;font-size: .28rem;background: #0091FF;}
-
-
-/*表格公共样式*/
-table{min-height: 25px; line-height: .45rem; border-collapse: collapse; }
-table,table tr th, table tr td { border:1px solid #666; }
-td,th{padding: .1rem;}
+.xs-plugin-pullup-container{line-height: 35px;}
 
 .vux-header{background-color: none;}
 .hjaddress .vux-cell-box:before{display: none;}
@@ -339,10 +321,3 @@ td,th{padding: .1rem;}
 .vux-popup-picker-header-menu-right{color:#828282; }
 
 .unitAdress .vux-cell-primary{margin-top:-1.36rem;}
-
-
-.textarea textarea{width:4.33rem;float:right; margin-right:.6rem;text-align: right;font-family: "Hiragino Sans GB", STHeiti, "Microsoft YaHei", '\5FAE\8F6F\96C5\9ED1', simsun, sans-serif, Arial;line-height: .5rem;color: #333 !important;}
-.textarea textarea::placeholder{color: #CFCCD6;}
-
-.submit_btn{width: 5.8rem;height:.88rem;line-height:.88rem;margin:.8rem auto 1rem auto; border-radius: .1rem;text-align: center;color:#fff;font-size: .3rem;background: #0091FF;}
-

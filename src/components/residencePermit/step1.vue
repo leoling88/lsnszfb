@@ -1,36 +1,27 @@
 <template>
   <div class="template_container">
 
-    <step step="1"></step>
+    <step step="1" stepText1="基础信息" stepText2="详情信息" stepText3="信息确认"></step>
     <div class="form_cont">
-<!--       <div @click="goNext">下一步</div>{{isReback}}
- -->
-      <!--地图组件目前还没有完成定位当前地址的功能-->
-      <!--<AMap v-model="formData.locationAddress" describe="当前地址" :areaName="formData.areaName" @change="amapChange" ref="AMap"></AMap>-->
+      <div @click="goNext" v-if="nextBut">下一步（支付宝）</div>{{isReback}}
 
-      <cell title="人员照片" ><img class="user_pic" :src="formData.userPic"></cell>
+      <!--<cell title="照　片"><img class="user_pic" :src="formData.userPic"></cell>-->
+      <cell title="姓　名" :value="formData.name" @click.native="mainOptChange"></cell>
+      <cell title="身份证" :value="formData.idNo" @click.native="mainOptChange"></cell>
+      <cell title="性别" :value="formData.sexC" @click.native="mainOptChange"></cell>
 
-      <x-input v-model="formData.name" title="姓名" placeholder="请输入姓名" :show-clear="false" placeholder-align="right" :readonly="true" text-align="right"></x-input>
+<!--       <custom-selector v-model="formData.sex" describe="性　别" :options="sexList" :isFirst="isFirst" :readOnly="hasRegisted" @on-click="mainOptChange"></custom-selector> -->
 
-      <x-input v-model="formData.idNo" title="身份证" placeholder="请输入身份证" :show-clear="false" placeholder-align="right" :disabled="true" text-align="right"></x-input>
+      <cell title="出生日期" :value="formData.birthday" @click.native="mainOptChange"></cell>
 
-      <x-input v-model="formData.sexC" title="性别" placeholder="" :show-clear="false" placeholder-align="right" :disabled="true" text-align="right"></x-input>
-<!--       <custom-selector v-model="formData.sex" describe="性别" :options="sexList" :isFirst="isFirst" ></custom-selector>
- -->
-      <!--改造在vux 中的datetime组件，watch了required属性，在其改变值的时候，调用datetime校验-->
-<!--       <datetime :required="!isFirst" class="address_cont" v-model="formData.birthday" title="出生日期" :max-year="new Date().getFullYear()" :min-year="1900" ref="dateTime"></datetime>
- -->
-      <x-input v-model="formData.birthday" title="出生日期" placeholder="" :show-clear="false" placeholder-align="right" :disabled="true" text-align="right"></x-input>
- 
-      <custom-selector v-model="formData.nation" describe="民族" :options="nationList" :isFirst="isFirst"></custom-selector>
+      <custom-selector v-model="formData.nation" describe="民　族" :options="nationList" :isFirst="isFirst" :readOnly="hasRegisted" @on-click="mainOptChange"></custom-selector>
 
-      <x-input v-model="formData.phoneNo" title="联系手机" placeholder="请输入联系手机号" :show-clear="true" placeholder-align="right" type="text" :max="11" text-align="right" :required="true" ref="phoneNo" :is-type="inputValid.cellPhone"></x-input>
+      <x-input v-model="formData.phoneNo" title="手机号" placeholder="请输入联系手机号" :show-clear="true" placeholder-align="right" type="text" :max="11" text-align="right" :required="true" ref="phoneNo" :is-type="inputValid.cellPhone"></x-input>
 
-      <p class="tips">请选择真实居住地址，虚假信息将会影响个人的信用积分。</p>
+      <custom-selector v-model="formData.address" describe="行政区" :options="areaList" :isFirst="isFirst" :showLoading="showLoading" :disabled="true" @change="addressChange"></custom-selector>
 
-      <custom-selector class="no_before" v-model="formData.address" describe="现居住地区" :options="areaList" :isFirst="isFirst" :showLoading="showLoading" :disabled="true" @change="addressChange"></custom-selector>
+      <selectorSearch v-model="formData.streetTownCode" describe="街　镇" :options="streetTownList" :disabled="formData.address.length <= 1" :isFirst="isFirst" @scrollBottom="queryJzdmPage" @searchWord="queryJzdmPage" @change="streetTownChange" ref="streetTown" :showLoading="showLoading"></selectorSearch>
 
-      <selectorSearch v-model="formData.streetTownCode" describe="街镇" :options="streetTownList" :disabled="formData.address.length <= 1" :isFirst="isFirst" @scrollBottom="queryJzdmPage" @searchWord="queryJzdmPage" @change="streetTownChange" ref="streetTown" :showLoading="showLoading"></selectorSearch>
 
       <selectorSearch v-model="formData.streetAlleysCode" describe="街道巷" :options="streetAlleysList" :disabled="formData.streetTownCode.length <= 1" :isFirst="isFirst" @scrollBottom="queryJddmPage" @searchWord="queryJddmPage" @change="streetAlleysChange" ref="streetAlleys" :showLoading="showLoading"></selectorSearch>
 
@@ -43,46 +34,61 @@
 
     <div v-transfer-dom>
       <confirm v-model="isShowConfirm" title="操作提示" @on-confirm="onConfirm">
-        <p style="text-align:center;">请您核实所填信息是否正确，确认无误后再提交！</p>
+        <p style="text-align:center;">确认并核对系统登记信息内容无误？</p>
       </confirm>
+    </div>
+
+    <div v-transfer-dom>
+      <alert v-model="Alert.state" title="操作提示">{{Alert.text}}</alert>
     </div>
 
   </div>
 </template>
 <script>
-  import {XInput, XButton, Group, Cell, Icon, Datetime, Confirm, TransferDomDirective as TransferDom, Value2nameFilter as value2name} from 'vux'
+  import {XInput, XButton, Group, Cell, Icon, Datetime, Confirm, TransferDomDirective as TransferDom, Value2nameFilter as value2name, Alert } from 'vux'
   import customSelector from '../common/customSelector.vue'
-  import AMap from '../common/AMap.vue'
+  import AddressEditor from '../common/AddressEditor.vue'
   import SelectorSearch from '../common/SelectorSearch.vue'
-  import mixin from '../../mixins/mixin'
+  import ScrollerRadio from '../common/ScrollerRadio.vue'
   import Step from '../common/Step.vue'
+  import VueCoreImageUpload from 'vue-core-image-upload'
   import moment from 'moment'
   import api from '../../api/api'
+  import { mapState } from 'vuex'
   export default {
     name: 'step1',
-    mixins: [mixin],
-    components: {XInput,XButton, Group, Cell, Icon, Datetime, customSelector, Confirm,Step,SelectorSearch, AMap},
+    components: {XInput, XButton, Group, Cell, Icon, Datetime, customSelector, VueCoreImageUpload, Confirm,Step,SelectorSearch, AddressEditor, ScrollerRadio, Alert },
     directives: {
       TransferDom
     },
     data() {
       return {
+        nextBut: true,     //显示下一步按钮
+        serviceType: this.$route.query.serviceType ? this.$route.query.serviceType : 1,  // 业务类型，1,为登记，2，为居住证
+        isFirst: true, // 是否是第一次选择或输入
         isShowConfirm: false,
         isReback: true,  // 数据是否回填，主要为了解决数据回填时阻止五级联动触发事件
+        showLoading: true,
+        readonly: true,
+        comGuid: this.$route.params.comGuid,
+        maxYear: new Date().getFullYear(),
+        formDataBackup: {},  // 用户数据副本，用于比较用户数据是否变更
+        homeType: this.$route.params.homeType,     //地区
+        idCard: this.$route.params.idCard,
+        userStyle:this.$route.params.userStyle,   //是否是新增
         formData: { // 表单数据
-
-          alipayAcount: this.$route.params.alipayAcount,
+          recordstate: 1, // 登：记状态
+          alipayAcount: this.$route.params.alipayAcount,  // openid
           userPic: '../../../static/images/house_m.jpg',// 照片
           zhimascore: '',
-          recordstate: 1, // 登记状态
           name: '',// 姓名
           idNo: '', // 身份号
           phoneNo: '',  // 手机号
           sex: '',  // 性别
-          sexC:'',   //性别中文
+          sexC:'',
           birthday: '', // 生日
           nation:  '', // 民族
-          address: '1',  //现居住行政区key,440115表示南沙区
+          address: '1',  //现居住行政区key,440113表示番禺区
           addressName: '',
           streetTownCode: '2', // 街镇key
           streetTownName: '',
@@ -95,25 +101,49 @@
           roomNumberCode: '5', //房号key
           roomNumberName: '',
           newRoomNumberName: '', // 手动新增房号
-          newAddress: '',
-          areaName: '山东省淄博市张店区',
-          locationAddress: '',   // 定位地址
-//          mailingAddress: ''  // 快递地址
+          newAddress: ''
         },
         uploadData:{},
+        sexList:[],
+        nationList:[],
         areaList:[{
-          key: '440115',
-          value: '南沙区'
+          key: '440113',
+          value: '番禺区'
         }],
         streetTownList:[],
         streetAlleysList:[],
         doorNumberList:[],
         roomNumberList: [],
         showAddress: false,
-        addAdressBtn: {
-          text: '+ 新增地址',
-          isOpen: false
+        Alert: {
+          state: false,
+          type: 1,
+          text: '请您到辖区来穗机构服务窗口进行主项信息变更 ！'
+        },
+        inputValid: {
+          cellPhone: (val) => {
+            if (this.isFirst) return {valid: true}
+            return {
+              valid: this.$regExp.phone.test(val),
+              msg: '手机号不合法！'
+            }
+          },
+          address: (val) => {
+            if (this.isFirst) {
+              return false
+            } else if (val) {
+              return true
+            }
+          }
         }
+      }
+    },
+    computed: {
+      ...mapState([
+        'openid','wxsqm','wxsqn','idNo'
+      ]),
+      hasRegisted: function () {  // 是否已在来穗系统做过登记
+        return !!this.formData.nation
       }
     },
     filters: {
@@ -122,13 +152,6 @@
       }
     },
     methods: {
-      amapChange (item, index) {
-        if (index == 0) {
-          this.formData.roomNumberName = item.address
-        } else {
-          this.formData.roomNumberName = item.address + item.name
-        }
-      },
       addressChange (key, name) {  // 选择行政区
         if (this.isReback) { // 数据回填
           this.queryJzdmPage()  // 查询街镇
@@ -143,12 +166,12 @@
           this.roomNumberList = []
           this.queryJzdmPage()  // 查询街镇
         }
-        this.formData.addressName = '南沙区'
+        this.formData.addressName = '番禺区'
       },
       streetTownChange (key, name) {  // 选择街镇
+
         if (this.isReback) { // 数据回填
           this.queryJddmPage(this.formData.streetAlleysName)  // 查询街道巷
-          console.log('街镇',this.formData.streetTownName)
         } else {
           this.formData.streetAlleysCode = ''
           this.streetAlleysList = []
@@ -163,7 +186,6 @@
       streetAlleysChange (key, name) {  // 选择街道巷
         if (this.isReback) {
           this.queryFwxxzPage(this.formData.doorNumberName)  // 查询门牌号,没有分页
-          console.log('街道巷',this.formData.streetAlleysName)
         } else {
           this.formData.doorNumberCode = ''
           this.doorNumberList = []
@@ -184,7 +206,6 @@
       doorNumberChange (key, name) {  // 选择门牌号
         if (this.isReback) { // 数据回填
           this.queryFwxxfhPage(this.formData.roomNumberName)  // 查询房号
-          console.log('门牌号', this.formData.doorNumberName)
         } else {
           this.formData.roomNumberCode = ''
           this.roomNumberList = []
@@ -192,65 +213,47 @@
         }
         this.formData.doorNumberName = name
       },
-      newDoorNumberChange (val) { // 手动新增门牌号
-        if (val) {
-          this.formData.newDoorNumberName = val
-          this.formData.doorNumberCode = -1
-          this.formData.roomNumberCode = -1
-        }
-      },
       roomNumberChange (key, name) {  // 选择房号
         this.isReback = false  // 数据回填结束
         this.formData.roomNumberName = name
-        console.log('选择房号', this.formData.roomNumberName)
-      },
-      newRoomNumberChange (val) { // 手动新增房号
-        if (val) {
-          this.formData.newRoomNumberName = val
-          this.formData.roomNumberCode = -1
-        }
-      },
-      newAddressChange (val) { // 新地址chenge事件
-        if (val) {
-          this.formData.streetAlleysCode = -1
-          this.formData.doorNumberCode =  -1
-          this.formData.roomNumberCode =  -1
-        }
-      },
-      deleNewAddress () { // 删除新地址
-        this.formData.newAddress = ''
-      },
-      imageuploaded(res) {
-        if (res.errcode == 0) {
-          this.src = res.data.src;
-        }
       },
       goNext(){  // 下一步按钮
         this.isFirst = false
-        this.$refs.phoneNo.validate();
-        const validate = this.validate();
+        this.$refs.phoneNo.validate()
+        const validate = this.validate()
 
         if (!validate.valid) {
           this.$store.commit('SHOWTOAST', validate.errorMsg);
         } else {
-          this.isShowConfirm = !this.isShowConfirm
+          if (this.hasChange()) {  // 用户信息有变更
+            this.isShowConfirm = !this.isShowConfirm
+          } else { // 没有变更直接跳下一步
+            // const query = {
+            //   serviceType: this.serviceType,
+            //   comGuid: this.$route.params.comGuid,
+            //   openid:this.$route.params.alipayAcount,
+            //   zhimascore:this.formData.zhimascore
+            // }
+            this.$router.push({path:'/step2/' + this.formData.idNo});
+          }
         }
       },
       onConfirm () {  // 确认
         this.$store.commit('UPDATE_LOADING', true);
         api.saveResideInfo({
           formData: this.formData,
-          homeType: 'lsns_'  // 南沙区域标记
+          homeType: 'lspy_'  // 番禺区域标记
         }).then(res => {
           this.$store.commit('UPDATE_LOADING', false);
+          console.log(res.data)
           if(res.data.success) {
             const query = {
-              serviceType: this.$route.query.serviceType,
-              comGuid: this.$route.params.comGuid,
-              openid:this.$route.params.alipayAcount,
-              zhimascore:this.formData.zhimascore
+              // serviceType: this.serviceType,
+              // comGuid: this.$route.params.comGuid,
+              // openid:this.$route.params.alipayAcount,
+              // zhimascore:this.formData.zhimascore
             }
-            this.$router.push({path:'/step2/' + this.formData.idNo, query});
+            this.$router.push({path:'/step2/' + this.formData.idNo});
           }
         }).catch(() => {
           this.$store.commit('UPDATE_LOADING', false);
@@ -272,8 +275,8 @@
         } else if (!this.formData.address || this.formData.address == '1') { // 现居住地区
           errorMsg = '请选择居住地区域！'
         } else if (!this.formData.streetTownCode || this.formData.streetTownCode == '2') { // 街镇
-          errorMsg = '请选择街镇！'
-        } else if (!this.formData.streetAlleysCode || this.formData.streetAlleysCode == '3') { // 街道巷
+          errorMsg = '请选择街道巷！'
+        }  else if (!this.formData.streetAlleysCode || this.formData.streetAlleysCode == '3') { // 街道巷
           errorMsg = '请选择街道巷！'
         } else if (!this.formData.doorNumberCode || this.formData.doorNumberCode == '4') { // 门牌号
           errorMsg = '请选择门牌号！'
@@ -284,6 +287,30 @@
           errorMsg = ''
         }
         return {valid, errorMsg}
+      },
+      getDictionary(){ // 获取所有的字典
+        api.queryDictionaryList().then(res => {
+          if(res.data.success) {
+            const data = res.data.obj;
+            this.laisuiFilerData(data.XB, this.sexList);
+            this.laisuiFilerData(data.MZ, this.nationList);
+          }
+        });
+/*        api.queryXzqList({   // 行政区域
+          openid: this.openid,
+          wxsqn: this.wxsqn,
+          account: this.formData.idNo,
+          wxsqm: this.wxsqm
+        }).then((res) => {  // 广州行政区
+          if (res.data.success) {
+            const data = JSON.parse(res.data.jsonRes[0]);
+            this.areaList = []
+            if (data.ackCode == 1) this.laisuiFilerData(data.dataList, this.areaList);
+          }
+          this.showLoading = false
+        }).catch(() => {
+          this.showLoading = false
+        });*/
       },
       laisuiFilerData(srcData, toData){ // 来穗接口筛选数据字典
         if(srcData instanceof Array && toData instanceof Array){
@@ -305,9 +332,13 @@
           });
         }
       },
-      peopleDetails () {  // 扫脸回填接口
+      getAlipayInfo () {
         this.$store.commit('UPDATE_LOADING', true);
-        api.peopleDetails(this.$route.params.comGuid).then(res => {
+
+//        //api.getUserDetails({idCard:this.comGuid}).then(res => {    //20180813 改
+        //
+
+        api.getPeopleDetailsMS({idCard:this.idCard,homeType:this.homeType}).then(res => {
           this.$store.commit('UPDATE_LOADING', false);
           const attributes = res.data.attributes
           const data = res.data.obj
@@ -319,38 +350,41 @@
               if(_sex % 2 ==0){
                 this.formData.sex  = 2
                 this.formData.sexC = '女'
-              } 
+              }
               else{
                 this.formData.sex  = 1
-                this.formData.sexC = '男'                
+                this.formData.sexC = '男'
               }
+                console.log("===>" +this.formData.sex)
             }else{
               _sex =  _idcard.charAt(_idcard.length-1)
+               console.log("===>" +this.formData.sex)
               if(_sex % 2 ==0){
                 this.formData.sex  = 2
                 this.formData.sexC = '女'
-              } 
+              }
               else{
                 this.formData.sex  = 1
-                this.formData.sexC = '男'                
+                this.formData.sexC = '男'
               }
             }
-           // localStorage.setItem("user_sex",this.formData.sex);
-            this.$Utils.setLocalStorage('USER-SEX', this.formData.sex);
+            localStorage.setItem("USER_SEX", this.formData.sex)
+
             this.formData.userPic = data.pic;
             this.formData.name = data.realname ? data.realname : '';
-            //this.$Utils.setLocalStorage('USER-NAME', this.formData.name);
             this.formData.idNo = data.idcard ? data.idcard : '';
             this.formData.zhimascore = data.zhimascore ? data.zhimascore : '';
             this.$emit('UPDATE_ID_NO', this.formData.idNo)
-            //this.formData.sex = data.sex ? data.sex : '';
-            this.formData.birthday = moment(data.birthday).format("YYYY-MM-DD");
+            // this.formData.birthday = moment(data.birthday).format("YYYY-MM-DD");
+            
+            this.formData.birthday = data.idcard.substring(6,10) + '-' + data.idcard.substring(10,12) + '-' + data.idcard.substring(12,14);
+
             this.formData.nation = data.nation ? data.nation : ''; // 民族
             this.formData.phoneNo = data.linkphone ? data.linkphone : '';
             this.$store.commit('UPDATE_ID_NO',data.idcard);  // 保存用户的身份证号，在居住证办理时会用到
-            this.formData.address = '440115'
-            this.formData.addressName = '南沙区'
-            if (this.formData.address == attributes.address) {  // 如果用户数据是南沙区的才会回填
+            this.formData.address = '440113'
+            this.formData.addressName = '番禺区'
+            if (this.formData.address == attributes.address) {  // 如果用户数据是番禺区的才会回填
               this.formData.newAddress = attributes.newAddress
               this.formData.streetTownCode = attributes.streetTownCode
               this.formData.streetTownName = attributes.streetTownName
@@ -363,29 +397,38 @@
               this.formData.roomNumberCode = attributes.roomNumberCode
               this.formData.roomNumberName = attributes.roomNumberName
               this.formData.newRoomNumberName = attributes.newRoomNumberName
+
               this.isReback = true
+
             } else {
               this.isReback = false
             }
+            this.formDataBackup = Object.assign(this.formDataBackup, this.formData)
+            if(this.userStyle == 1){
+              api.setPeopleDetailsMS({idCard:this.idCard}).then(res => {
+              });
+            }
+
           }
         }).catch((res) => {
           this.$store.commit('UPDATE_LOADING', false);
           this.isReback = false
         })
+
       },
       queryJzdmPage (keyWord, currentPage, isClear) {  // 街镇查询, currentPage: 分页，keyWord：搜索关键字，isClear：搜索框文本变动，是否清空数组
         if (isClear) this.streetTownList = [] // 关键字变更，清空数组
         this.showLoading = true
         api.queryJzdmPage({
-          openid: this.$route.params.alipayAcount,
-          wxsqn: this.$route.params.alipayAcount,
+          openid: this.idCard,//openid: this.openid,
+          wxsqn: this.wxsqn,
           account: this.formData.idNo,
           xzq: this.formData.address,
           itemName: keyWord ? keyWord : '',
           currentPage: currentPage ? currentPage : 1
         }).then((res) => {
           const data = JSON.parse(res.data.jsonRes[0]);
-//          this.$store.commit('UPDATE_LOAD_MORE', false);
+          this.$store.commit('UPDATE_LOAD_MORE', false);
           this.showLoading = false
           if (res.data.success) {
             if (data.page.currentPage < currentPage) {
@@ -404,8 +447,8 @@
         if (isClear) this.streetAlleysList = []
         this.showLoading = true
         api.queryJddmPage({
-          openid: this.$route.params.alipayAcount,
-          wxsqn: this.$route.params.alipayAcount,
+          openid: this.idCard,
+          wxsqn: this.wxsqn,
           account: this.formData.idNo,
           jz: this.formData.streetTownCode,
           itemName: keyWord ? keyWord : '',
@@ -432,8 +475,8 @@
         this.showLoading = true
         if (isClear) this.doorNumberList = []
         api.queryFwxxzPage({
-          openid: this.$route.params.alipayAcount,
-          wxsqn: this.$route.params.alipayAcount,
+          openid: this.idCard,
+          wxsqn: this.wxsqn,
           account: this.formData.idNo,
           jddm: this.formData.streetAlleysCode,
           mpmc: keyWord ? keyWord : '',
@@ -461,8 +504,8 @@
         this.showLoading = true
         if (isClear) this.roomNumberList = []
         api.queryFwxxfhPage({
-          openid: this.$route.params.alipayAcount,
-          wxsqn: this.$route.params.alipayAcount,
+          openid: this.idCard,
+          wxsqn: this.wxsqn,
           account: this.formData.idNo,
           zhid: this.formData.doorNumberCode,
           currentPage: currentPage ? currentPage : 1,
@@ -485,10 +528,34 @@
           this.isReback = false
           this.showLoading = false
         })
+      },
+      mainOptChange () {  // 主项信息变更
+        if (!this.hasRegisted) return
+        this.Alert.state = true
+        this.Alert.type = 1
+        this.Alert.text = '请您到辖区来穗机构服务窗口进行主项信息变更 ！'
+      },
+      hasChange() {  // 检测用户数据是否变更
+        for (let i in this.formData) {
+          if (this.formData[i] != this.formDataBackup[i]) return true
+        }
       }
     },
-    created () {
-      this.peopleDetails();
+    mounted () {
+      if (this.serviceType == 1) {
+        if (window.AlipayJSBridge) AlipayJSBridge.call('setTitle', {title: '居住信息登记'});
+      } else {
+        if (window.AlipayJSBridge) AlipayJSBridge.call('setTitle', {title: '居住证办理'});
+      }
+      if (window.AlipayJSBridge) this.nextBut = false
+      this.$store.commit('UPDATE_COMGUID',this.comGuid);
+      this.$store.commit('UPDATE_ALIPAY_ACOUNT',this.formData.alipayAcount);
+      this.getDictionary();
+      this.getAlipayInfo();
+      document.addEventListener('optionMenu', this.goNext, false) // 绑定支付宝右上角点击事件
+    },
+    destroyed () {
+      document.removeEventListener('optionMenu', this.goNext, false) // 删除支付宝右上角点击事件
     }
   }
 </script>
@@ -497,12 +564,7 @@
   .user_pic{width:auto;height:1.2rem;}
   .go_prev_btn{width:1rem;height:48px;line-height:48px;position: absolute;top:0;left:.3rem;color:#fff;text-indent: -99999px;}
   .go_next_btn{width:1rem;height:1rem;line-height:1rem;position: absolute;top:0;right:.3rem;color:#fff;}
-  .tips {
-    width:100%;padding:7px 15px;overflow:hidden;line-height: .45rem;font-size:.26rem;box-sizing:border-box;position: relative;color:red;background: #EEEEEE;
-    &:after{content:'';display:block;width:100%;height:1px;border-top: 1px solid #D9D9D9;transform: scaleY(0.5);position: absolute;top:0;left:15px;}
-    &:before{content: '提示：';color: #333;float: left;display: block;height:.6rem;}
-    span{color:#333;display: inline-block;height:1rem;float: right;}
-  }
+
 
 </style>
 

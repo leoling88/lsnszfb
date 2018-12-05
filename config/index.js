@@ -22,21 +22,16 @@ module.exports = {
   },
   dev: {
     env: require('./dev.env'),
-    port: 8083,
+    port: 8088,
     autoOpenBrowser: false,
     assetsSubDirectory: 'static',
     assetsPublicPath: '/',
     proxyTable: {// 配置请求代理
       '/cnLaiSui':{
-        // target: 'http://192.168.13.81:8082',
-        // target: 'http://47.96.1.215:8088',
-        // target: 'http://10.64.229.32:8083',
-        // target: 'http://192.168.7.38:8080',
-        // target: 'htpp://192.168.16.43:8080',
-
-        target: 'http://laisui.createt.cn:3389',
-        //target: 'htpp://localhost',
-        //target: 'http://120.79.212.98',
+        // target: 'http://192.168.18.250:8080',
+        //target: 'http://laisui.createt.cn',
+        //target: 'http://aa.qqeif.com',
+       target: 'http://laisui.createt.cn:3389',
         changeOrigin:true,
         pathRewrith:{
           '^/cnLaiSui': '/cnLaiSui'

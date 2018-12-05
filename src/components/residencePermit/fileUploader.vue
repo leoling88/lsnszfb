@@ -13,18 +13,17 @@
         <a v-if="isRenewal == 'true'" class="submit_btn" href="/cnLaiSui/mobile/zhimaCreditStart?bizCode=CERT_PHOTO">重拍</a>
       </div>
 
-      <!--居住证相片回执-->
+      <!--其他资料-->
       <div class="file_cont" v-else>
         <ul class="picture_list">
           <template v-for="(item,index) in picList">
-            <li :key="index">
-              <img :src="item.dataURL">
-              <icon v-if="isRenewal == 'true'" @click.native="deletePic(item.uuid, index)" type="cancel"></icon>
-            </li>
+            <li :key="index"><img :src="item.dataURL" alt=""><icon v-if="isRenewal == 'true'" @click.native="deletePic(item.uuid, index)" type="cancel"></icon></li>
           </template>
           <li v-if="isRenewal == 'true'" class="select_pic" @click="selectPic">+</li>
         </ul>
+
         <div v-if="isRenewal == 'true'" class="submit_btn" @click="fileUploader">确定上传</div>
+        <div v-if="this.$route.query.isChange == 1" class="submit_btn" @click="goNext">立即预约</div>
       </div>
 
   </div>
@@ -36,18 +35,19 @@
       components: {Icon},
       data() {
         return {
-//          isRenewal: false, // 1 表示居住证有效期大于30天，0：小于30天，进入续签流程
-          isRenewal: this.$route.query.isRenewal, // 1 表示居住证有效期大于30天，0：小于30天，进入续签流程
+          isRenewal: this.$route.query.isRenewal, // isRenewal 判断是否是已进入续签流程, 目前在续签流程可以更改资料
           fileType: this.$route.query.fileType,  // 文件类型
+          isUploaded: false,
           idCard: this.$route.query.idCard,  // 身份证
           picList: [], // 其他图片列表
-          photo: this.$route.query.photo ? this.$route.query.photo.split(',') : ''
+          photo: this.$route.query.photo ? this.$route.query.photo.split(',') : '',
+          returnPre: 0
         }
       },
       methods: {
         fileUploader () {  // 上传图片
           if (this.picList.length == 0) {
-            this.$store.commit('SHOWTOAST', '请选择图片！');
+            this.$store.commit('SHOWTOAST', '请选择相关图片！');
           } else {
             this.$store.commit('UPDATE_LOADING', true);
             api.uploadPic({
@@ -98,15 +98,15 @@
           }
         },
         isHavePic () { // 查询图片各个类型是否已经上传图片
-		  this.$store.commit('UPDATE_LOADING', true);
+          this.$store.commit('UPDATE_LOADING', true);
           api.isHavePic(this.idCard).then((res)=>{
             const data = res.data.jsonRes[0]
-			this.$store.commit('UPDATE_LOADING', false);
+            this.$store.commit('UPDATE_LOADING', false);
             if (res.data.success) {
               switch (this.fileType) {
                 case '1':
                   this.picList = data.myPicIdCard;
-                  if (!this.$route.query.photo) this.photo = data.myPicIdCard
+				          if (!this.$route.query.photo) this.photo = this.picList
                   break;
                 case '2':
                   this.picList = data.myPicRedisdenceReceipt;
@@ -116,17 +116,62 @@
                   break;
                 case '4':
                   this.picList = data.myPicAddrReceipt;
+                  break;
+                case '5':
+                  this.picList = data.educationArr;
+                  break;
+                case '6':
+                  this.picList = data.socialRecordsArr;
+                  break;
+                case '7':
+                  this.picList = data.leaseContractArr;
+                  break;
+                case '8':
+                  this.picList = data.patentCertificateArr;
+                  break;
+                case '9':
+                  this.picList = data.taxProofArr;
               }
-
             }
           }).catch(()=>{
             this.$store.commit('UPDATE_LOADING', false);
           });
+        },
+        goNext () {
+          if (this.picList.length > 0) {
+            this.$store.commit('SHOWTOAST', '请上传相关图片！');
+          } else {
+            this.$store.commit('UPDATE_LOADING', true);
+            api.saveResideInfo(JSON.parse(this.$route.query.data)).then(res => {
+              this.$store.commit('UPDATE_LOADING', false);
+              if(res.data.success) {
+                const query = {
+                  serviceType: this.serviceType,
+                  comGuid: this.$route.query.comGuid,
+                  openid: this.$route.query.openid,
+                  isChange: this.$route.query.isChange
+                }
+                this.$router.push({path:'/step3/'+ this.idCard, query});
+              }
+            }).catch(() => {
+              this.$store.commit('UPDATE_LOADING', false);
+            })
+          }
         }
       },
       mounted(){
         this.isHavePic();
-        document.addEventListener('optionMenu', (e) => {this.$router.push({path: '/integralHome', query: {idNo: this.idCard}})}, false)
+        if (window.AlipayJSBridge && this.$route.query.isChange == 1) {
+          AlipayJSBridge.call('setOptionMenu', {
+            title : '立即预约',
+            redDot : '-1',
+            color : '#2a333c'
+          });
+          document.addEventListener('optionMenu', this.goNext, false)
+        }
+      },
+      destroyed () {
+        document.removeEventListener('optionMenu', this.goNext, false) // 删除支付宝右上角点击事件
       }
   }
 </script>

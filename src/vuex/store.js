@@ -78,8 +78,8 @@ const mutations = {
 
 // 创建 store 实例
 export default new Vuex.Store({
-  actions,
-  getters,
-  state,
-  mutations
+    actions,
+    getters,
+    state,
+    mutations
 })

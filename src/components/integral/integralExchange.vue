@@ -6,17 +6,18 @@
           <div class="my_integral">
             <span>{{jifen}}</span><span>我的积分</span>
           </div>
-          <router-link to="/exchangeRecord" class="integral_exchange_record"><img src="../../../static/images/icon_integral.png"/>兑换记录</router-link>
+          <router-link :to="`/exchangeRecord/${$route.params.idCard}`" class="integral_exchange_record"><img src="../../../static/images/icon_integral.png"/>兑换记录</router-link>
         </div>
         <div class="title_cont">精选推荐</div>
 
         <!--精品推荐-->
         <ul class="recommend_cont">
           <li v-for="item in integralist">
-            <router-link :to="`/exchangeing/${item.goodsid}`">
+            <router-link :to="`/exchangeing/${item.goodsid}/${$route.params.idCard}`">
               <div class="pic_box"><img :src="item.littlepic" alt=""></div>
               <span>{{item.goodstitle}}</span>
-              <span><em>{{item.integration}}</em>积分</span>
+              <span>积分：<em>{{item.integration}}</em></span>
+              <span>库存：<em>{{item.stock}}</em></span>
             </router-link>
           </li>
         </ul>
@@ -36,6 +37,8 @@
           integralist:[],
           jifen:'',
           currentPage: 1,
+          idCard:this.$route.params.idCard,
+          name:this.$route.params.name,
           showBtline:false,
           pullupConfig:{
             content: '正在努力加载...',
@@ -76,7 +79,8 @@
       },
       selectJiFen () {  // 我的积分
         api.selectJiFen({
-          userId: '1'
+          userId: this.idCard,
+          name:this.name
         }).then((res) => {
           this.jifen = res.data.jsonRes[0].jifen;
         })
@@ -92,6 +96,7 @@
       this.$nextTick(() => {
         this.$refs.wrapper.reset();
       })
+      console.log('556',this.idCard);
     }
   }
 </script>
@@ -113,17 +118,17 @@
     width: 100%;overflow:hidden;line-height:.8rem;background-color: #f5f5f5;text-indent:.3rem;font-size: .3rem;color: #5a6570;}
   .recommend_cont{width:100%;overflow: hidden;
     li{
-      width:3.28rem;height:4rem;margin-bottom:.3rem;background: #fff;border:1px solid #F2F3F2;
+      width:3.28rem;height:4.4rem;margin-bottom:.3rem;background: #fff;border:1px solid #F2F3F2;
       .pic_box{
         width:2.57rem;height:2.56rem;background:url("../../assets/images/moren.png") no-repeat center center;background-size:cover;margin:.34rem auto 0 auto;overflow:hidden;text-align: center;display: flex;align-items: center;justify-content: center;
         img{height:100%;width:100%;}
       }
-      span{width:2.57rem;margin:.17rem auto 0 auto;overflow:hidden;display: block;color:#2a333c;font-size: .3rem;line-height: .3rem;text-overflow: ellipsis;
+      span{width:2.57rem;margin:.1rem auto 0 auto;overflow:hidden;display: block;color:#2a333c;font-size: .3rem;line-height: .35rem;text-overflow: ellipsis;
         display: -webkit-box;-webkit-line-clamp: 1;-webkit-box-orient: vertical;overflow:hidden;}
-      span:last-of-type{
-        margin-top:.1rem;
-        em{font-style: normal;color:#ff575a;font-size: .28rem;}
-      }
+      span{
+         em{font-style: normal;color:#ff575a;font-size: .28rem;}
+       }
+      span:nth-of-type(1){margin-top:.17rem;}
 
     }
     li:nth-child(odd){float: left;border-left:0;margin-left:.3rem;}
